@@ -6,7 +6,7 @@ const lensReviewCard = { icon: ScanLine, lens: 'Random', skill: 'Judge AI-genera
   score: () => { const { attempts } = lensReviewData(); return percent(attempts.map((a: any) => a.result.total / 10)); } };
 function Card({ id, name, card, go }: { id: string; name: string; card: NonNullable<Feature['card']>; go: Go }) {
   const open = isUnlocked(id, readCourse());
-  const score = card.score();
+  const score = features.find(f => f.scoreFor)?.scoreFor?.(id) ?? card.score();
   return <article className="practice-card">
     <div className="practice-card-head"><card.icon size={20}/><span className="line-pill">{card.lens}</span></div>
     <h2>{name}</h2><p>{card.skill}</p>
