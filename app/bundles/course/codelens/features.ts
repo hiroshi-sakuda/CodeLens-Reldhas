@@ -11,7 +11,8 @@ export type Feature = {
   label: string;
   Screen: ComponentType<ScreenProps>;
   HomePanel?: ComponentType<ScreenProps>;
-  card?: { icon: ComponentType<any>; lens: string; skill: string; minutes: string; score: () => string | null };
+  card?: { icon: ComponentType<any>; lens: string; skill: string; score: () => string | null };
+  help?: { title: string; steps: string[] };
 };
 const found = import.meta.glob('./features/*/index.tsx', { eager: true }) as Record<string, { default: Feature }>;
 export const features = Object.values(found).map(m => m.default).sort((a, b) => a.order - b.order);
