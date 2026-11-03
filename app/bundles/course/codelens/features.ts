@@ -11,6 +11,7 @@ export type Feature = {
   label: string;
   Screen: ComponentType<ScreenProps>;
   HomePanel?: ComponentType<ScreenProps>;
+  scoreFor?: (fn: string) => string | null;
   card?: { icon: ComponentType<any>; lens: string; skill: string; minutes: string; score: () => string | null };
 };
 const found = import.meta.glob('./features/*/index.tsx', { eager: true }) as Record<string, { default: Feature }>;
