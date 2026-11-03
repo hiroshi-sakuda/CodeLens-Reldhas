@@ -8,3 +8,4 @@
 .trace-results{display:grid;gap:10px}.trace-result{border:1px solid var(--palette-343b3e);border-radius:6px;padding:10px}.trace-result h4{font-size:11px;margin-bottom:6px}.trace-result td{padding:3px 4px}.trace-result tr.marked{background:var(--palette-2c2a21);color:var(--palette-d7af79)}.trace-result .trace-scroll{max-height:240px;overflow:auto}
 .submission-bar>.secondary{flex-shrink:0}
 @media(max-width:600px){.output-pair{grid-template-columns:1fr}}
+.trace-scroll{position:relative}
