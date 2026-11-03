@@ -23,7 +23,7 @@ export default function ConceptMatchScreen({ params, go }: ScreenProps) {
     setAttemptId(createAttempt({ function: 'concept-match', title: `Set of ${picked.length} questions`, difficulty, topicId: null, exerciseIds: picked.map((q: any) => q.id), answers: { choices: {}, reasons: {}, checked: [] }, fromSuggestion: !!params.fromSuggestion }).id);
   }
   if (error) return <section className="review-setup difficulty-setup"><h1>Concept Match</h1><p>{error}</p><button className="secondary" onClick={()=>go('home')}>Back to practice</button></section>;
-  if (!attemptId) return <DifficultySetup title="Concept Match" what="a set of questions" minutes="2–3 min per question" levels={levels} autoStart={again || (params.fromSuggestion ? lastDifficulty('concept-match') : undefined)} onStart={start} onBack={()=>go('home')}/>;
+  if (!attemptId) return <DifficultySetup title="Concept Match" what="a set of questions" levels={levels} autoStart={again || (params.fromSuggestion ? lastDifficulty('concept-match') : undefined)} onStart={start} onBack={()=>go('home')}/>;
   return <QuestionSet key={attemptId} attemptId={attemptId} onHome={()=>go('home')} onNewSet={()=>{setAgain(getAttempt(attemptId).difficulty);setAttemptId(null);}}/>;
 }
 function QuestionSet({ attemptId, onHome, onNewSet }: { attemptId: string; onHome: () => void; onNewSet: () => void }) {
