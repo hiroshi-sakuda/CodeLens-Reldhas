@@ -23,7 +23,7 @@ export default function DryRunScreen({ params, go }: ScreenProps) {
     setAttemptId(createAttempt({ function: 'dry-run', title: question.title, difficulty, topicId: question.topicId, exerciseIds: [question.id], fromSuggestion: !!params.fromSuggestion }).id);
   }
   if (error) return <section className="review-setup difficulty-setup"><h1>Dry Run</h1><p>{error}</p><button className="secondary" onClick={()=>go('home')}>Back to practice</button></section>;
-  if (!attemptId) return <DifficultySetup title="Dry Run" what="a problem" minutes="3–5 min" levels={levels} autoStart={again || (params.fromSuggestion ? lastDifficulty('dry-run') : undefined)} onStart={start} onBack={()=>go('home')}/>;
+  if (!attemptId) return <DifficultySetup title="Dry Run" what="a problem" levels={levels} autoStart={again || (params.fromSuggestion ? lastDifficulty('dry-run') : undefined)} onStart={start} onBack={()=>go('home')}/>;
   return <Exercise key={attemptId} attemptId={attemptId} onHome={()=>go('home')} onNext={()=>{setAgain(getAttempt(attemptId).difficulty);setAttemptId(null);}}/>;
 }
 function Exercise({ attemptId, onHome, onNext }: { attemptId: string; onHome: () => void; onNext: () => void }) {

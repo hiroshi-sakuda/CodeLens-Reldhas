@@ -23,7 +23,7 @@ export default function ReviewSetup({ onStart }: { onStart: (config: PracticeCon
       </div><label className="random-focus"><input type="checkbox" checked={randomFocus} onChange={e=>{setRandomFocus(e.target.checked);setError('');}}/><Shuffle size={15}/>Random</label></fieldset>
 
       {error&&<p className="validation-error" role="alert">{error}</p>}
-      <div className="setup-actions"><span className="muted">8–15 min · Sample exercises</span><button className="primary" type="submit">Start practice<ArrowRight size={16}/></button></div>
+      <div className="setup-actions"><span className="muted">Sample exercises</span><button className="primary" type="submit">Start practice<ArrowRight size={16}/></button></div>
     </form>
   </section>;
 }
