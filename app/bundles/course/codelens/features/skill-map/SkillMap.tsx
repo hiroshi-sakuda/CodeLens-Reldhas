@@ -1,7 +1,7 @@
 import { ArrowRight, Sparkles } from 'lucide-react';
 import type { ScreenProps } from '../../features';
 import { summarizeLensReview, summarizePractice } from '../../attempt-summary.js';
-import { functionNames, practiceFunctions } from '../../course.js';
+import { functionNames, isUnlocked, practiceFunctions } from '../../course.js';
 import { dimensions } from '../../model.js';
 import { lensReviewData, listAttempts, readTa } from '../../practice-log.js';
 import { sampleHistory } from './sample-history.js';
@@ -23,7 +23,7 @@ export function Suggestion({ go, has, heading }: ScreenProps & { heading: string
   const lens = map.weakest;
   if (!lens) return <section className="next-practice suggestion"><div><h2>{heading}</h2><p>Suggestions unlock as you practise: at least {minItems} answers in two lenses.</p></div></section>;
   const target = practiseTarget(lens, has);
-  return <section className="next-practice suggestion"><div><h2>{heading}</h2><p><strong>Your weakest area is {lens} ({pct((map.byLens as any)[lens].value)}).</strong> {usualSlip(map, lens)}</p></div><button className="primary" onClick={()=>go(target, target==='lens-review'?{}:{fromSuggestion:true})}>Practise this<ArrowRight size={16}/></button></section>;
+  return <section className="next-practice suggestion"><div><h2>{heading}</h2><p><strong>Your weakest area is {lens} ({pct((map.byLens as any)[lens].value)}).</strong> {usualSlip(map, lens)}</p></div>{isUnlocked(target)?<button className="primary" onClick={()=>go(target, target==='lens-review'?{}:{fromSuggestion:true})}>Practise this<ArrowRight size={16}/></button>:<p className="preparing">Your TA is preparing this</p>}</section>;
 }
 export default function SkillMap(props: ScreenProps) {
   const map = loadSkillMap();
