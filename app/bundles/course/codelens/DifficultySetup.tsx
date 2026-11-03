@@ -7,8 +7,8 @@ export function Generating({ what, onDone }: { what: string; onDone: () => void 
   useEffect(() => { const timer = setTimeout(onDone, generatingMs); return () => clearTimeout(timer); }, []);
   return <section className="generating" role="status"><Sparkles size={22}/><h1>Generating {what}…</h1><p className="muted">Using the course material your TA approved.</p><span className="simulated-label">Simulated</span></section>;
 }
-export default function DifficultySetup({ title, what, minutes, levels, autoStart, onStart, onBack }: {
-  title: string; what: string; minutes: string; levels: Record<Difficulty, string>; autoStart?: Difficulty;
+export default function DifficultySetup({ title, what, levels, autoStart, onStart, onBack }: {
+  title: string; what: string; levels: Record<Difficulty, string>; autoStart?: Difficulty;
   onStart: (difficulty: Difficulty) => void; onBack: () => void;
 }) {
   const [difficulty, setDifficulty] = useState<Difficulty>(autoStart || 'easy');
@@ -24,7 +24,7 @@ export default function DifficultySetup({ title, what, minutes, levels, autoStar
           <input type="radio" name="difficulty" checked={difficulty===level} onChange={()=>setDifficulty(level)}/><span>{label(level)}<small>{levels[level]}</small></span>
         </label>)}
       </div></fieldset>
-      <div className="setup-actions"><span className="muted">{minutes} · Sample exercises</span><button className="primary" type="submit">Start practice<ArrowRight size={16}/></button></div>
+      <div className="setup-actions"><span className="muted">Sample exercises</span><button className="primary" type="submit">Start practice<ArrowRight size={16}/></button></div>
     </form>
   </section>;
 }

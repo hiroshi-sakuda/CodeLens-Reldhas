@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronRight, Moon, Sun } from 'lucide-react';
+import { Check, ChevronRight, CircleHelp, Moon, Sun, X } from 'lucide-react';
 import App from './App';
 import StudentHome from './StudentHome';
 import { features, type Go } from './features';
@@ -17,6 +17,7 @@ function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; 
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#f5f7f8' : '#111517');
     try { localStorage.setItem('codelens-theme', theme); } catch { /* Theme still works for this session. */ }
   }, [theme]);
+  const [showHelp, setShowHelp] = useState(false);
   const feature = features.find(f => f.id === route.id);
   const has = (id: string) => id === 'lens-review' || features.some(f => f.id === id);
   const pages = features.filter(f => f.role === role && f.kind === 'page');
@@ -25,11 +26,11 @@ function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; 
     <header className="topbar">
       <nav className="breadcrumb-nav shell-nav" aria-label="Main">
         <span className="breadcrumb">CodeLens</span><ChevronRight size={14}/>
-        {role==='student'&&<button className={route.id==='home'?'current':''} onClick={()=>go('home')}>Practice</button>}
-        {pages.map(p=><button key={p.id} className={route.id===p.id?'current':''} onClick={()=>go(p.id)}>{p.label}</button>)}
+        {role==='ta'?pages.map(p=><button key={p.id} className={'menu-item'+(route.id===p.id?' current':'')} onClick={()=>go(p.id)}>{p.label}</button>):feature?<><button onClick={()=>go('home')}>Practice</button><ChevronRight size={14}/><span aria-current="page">{feature.label}</span></>:<span aria-current="page">Practice</span>}
       </nav>
       <div className="topbar-actions">
-        {features.some(f=>f.role==='ta')&&<div className="role-switch" role="group" aria-label="View as"><button aria-pressed={role==='student'} onClick={()=>onRole('student')}>Student</button><button aria-pressed={role==='ta'} onClick={()=>onRole('ta')}>TA</button></div>}
+        {feature?.help&&<button className="icon-button" aria-label="How it works" onClick={()=>setShowHelp(true)}><CircleHelp size={17}/></button>}
+        {features.some(f=>f.role==='ta')&&(role==='ta'||!feature)&&<div className="role-switch" role="group" aria-label="View as"><button aria-pressed={role==='student'} onClick={()=>onRole('student')}>Student</button><button aria-pressed={role==='ta'} onClick={()=>onRole('ta')}>TA</button></div>}
         <button className="theme-toggle" onClick={()=>setTheme(theme==='dark'?'light':'dark')} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'} title={theme==='dark'?'Switch to light mode':'Switch to dark mode'}>{theme==='dark'?<Sun size={16}/>:<Moon size={16}/>}<span>{theme==='dark'?'Light mode':'Dark mode'}</span></button>
         <span className="local-status"><span className="live-dot"/>Saved locally</span>
       </div>
@@ -38,6 +39,7 @@ function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; 
       {feature?<feature.Screen key={route.id+JSON.stringify(route.params)} {...screenProps}/>:<StudentHome {...screenProps}/>}
       <footer><span>Demo · Sample exercises and simulated grading</span></footer>
     </main>
+    {showHelp&&feature?.help&&<div className="modal-backdrop" onClick={()=>setShowHelp(false)}><section className="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" onClick={e=>e.stopPropagation()}><button autoFocus className="icon-button close-modal" aria-label="Close help" onClick={()=>setShowHelp(false)}><X/></button><h2 id="help-title">{feature.help.title}</h2><ol>{feature.help.steps.map(step=><li key={step}>{step}</li>)}</ol><button className="primary" onClick={()=>setShowHelp(false)}>Got it<Check size={16}/></button></section></div>}
   </div></div>;
 }
 export default function Shell() {
