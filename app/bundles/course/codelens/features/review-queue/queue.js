@@ -9,12 +9,13 @@ export function statusOf(reviews) {
 const overlaps = (comment, finding) => comment.start <= finding.end && comment.end >= finding.start;
 const hasKeyword = (comment, finding) => finding.keywords.some(k => comment.claim.toLowerCase().includes(k));
 const words = comment => `${comment.claim} ${comment.reasoning}`.trim().split(/\s+/).length;
-// Low when a comment is on the right lines but says something else, covers two
+// Low when a comment is on the right lines but says something else, speaks to two
 // issues, or is a long comment off the answer key (it may be a valid extra point).
 export function confidenceOf(exercise, comments) {
   const low = comments.some(comment => {
     const hit = exercise.findings.filter(f => overlaps(comment, f));
-    return hit.length > 1 || hit.some(f => !hasKeyword(comment, f)) || (hit.length === 0 && words(comment) > 25);
+    const matched = hit.filter(f => hasKeyword(comment, f));
+    return matched.length > 1 || (hit.length > 0 && matched.length === 0) || (hit.length === 0 && words(comment) > 25);
   });
   return low ? 'low' : 'high';
 }

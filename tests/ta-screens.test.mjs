@@ -17,6 +17,9 @@ test('sent wins over skipped',()=>{
 test('confidence is low for a comment that misses the point or a long off-key one',()=>{
   assert.equal(confidenceOf(seats,[good]),'high');
   assert.equal(confidenceOf(seats,[{...good,claim:'Odd style here'}]),'low');
+  const discount=exercises.find(e=>e.id==='discount');
+  assert.equal(confidenceOf(discount,[{...good,start:3,end:3,claim:'The 100 boundary is wrong'}]),'high');
+  assert.equal(confidenceOf(discount,[{...good,start:3,end:3,claim:'The 100 boundary and negative totals'}]),'low');
   assert.equal(confidenceOf(seats,[{...good,start:1,end:1,claim:'word '.repeat(30)}]),'low');
 });
 test('queue order: waiting, more flags, then newest',()=>{

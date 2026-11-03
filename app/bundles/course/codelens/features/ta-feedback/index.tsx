@@ -10,7 +10,10 @@ const titleOf = (exercise: string) => exercises.find(e => e.id === exercise)?.ti
 function Notices({ go }: ScreenProps) {
   const seen = readTa().seen as string[];
   const reviews = allReviews();
-  const fresh = mine().filter(s => !seen.includes(s.id + ':' + taFeedbackFor(reviews.filter((r: any) => r.attemptId === s.id)).sent.length) && taFeedbackFor(reviews.filter((r: any) => r.attemptId === s.id)).sent.length > 0);
+  const fresh = mine().filter(s => {
+    const sent = taFeedbackFor(reviews.filter((r: any) => r.attemptId === s.id)).sent.length;
+    return sent > 0 && !seen.includes(s.id + ':' + sent);
+  });
   return <>{fresh.map(s=><section className="ta-notice" key={s.id}><p><strong>New TA feedback</strong> on your Lens Review of {titleOf(s.exercise)}.</p><button className="primary" onClick={()=>go('ta-feedback',{attemptId:s.id})}>View feedback<ArrowRight size={16}/></button></section>)}</>;
 }
 function TaFeedback({ params, go }: ScreenProps) {
