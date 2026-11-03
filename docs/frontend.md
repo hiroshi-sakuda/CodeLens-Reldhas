@@ -1,6 +1,7 @@
 # CodeLens frontend demo
 
-Standalone React + TypeScript Lens Review prototype. No Rails, authentication,
+Standalone React + TypeScript practice prototype. This guide covers Lens Review;
+Dry Run and Concept Match are in [the new features guide](new-features.md). No Rails, authentication,
 API keys, database, or backend is needed. The Ruby backend has been removed.
 
 ## Run
@@ -25,14 +26,14 @@ Google Fonts is optional; system fonts work if offline.
 
 ## Demo walkthrough
 
-1. Choose one or more training criteria (or Random criteria), then start practice. The scenario is chosen automatically from matching samples. Random focus stays hidden until submission. Setup is the opening screen; returning users can resume a saved draft or start another review. The workspace provides a Back to review setup link. Read the brief before reviewing the code.
+1. Open Lens Review from the practice menu. Choose one or more training criteria (or Random criteria), then start practice. The scenario is chosen automatically from matching samples. Random focus stays hidden until submission. Returning users can resume a saved draft or start another review. The workspace provides a Back to review setup link. Read the brief before reviewing the code.
 2. Click line 6, then line 9, to select the nested lookup. This opens the Annotations tab beside Review guide.
 3. Choose Efficiency. Example claim: "The nested loop scans every booked seat."
 4. Explain that each request scans the whole list, resulting in O(r*b) time.
 5. Propose building a set of booked seats before the loop. Save the annotation.
 6. Edit or delete annotations before submission. Alternatively, select No issues found beside Submit review and give a justification (this is mutually exclusive with annotations). Submit to lock the review.
 7. Read the model answer and corrected code directly below the score. Expand Scoring details for the rubric breakdown.
-8. Visit My progress, or try the shopping discount exercise for boundary cases.
+8. Visit My progress from the feedback panel, or try the shopping discount exercise for boundary cases.
 
 Saved annotations, submitted reviews, and history persist in browser localStorage
 under `codelens-demo-v1`. Open annotation form text, selected lines, and review setup are saved with each draft. Back to review setup opens the separate training-criteria screen while preserving previous drafts and submitted history. Analytics show the last
@@ -43,8 +44,8 @@ Feedback is explicitly simulated. A deterministic heuristic checks focus,
 issue keywords, line overlap, reasoning length, and fix keywords. Duplicate
 annotations cannot increase an issue's score. This is not semantic assessment,
 actual AI generation, or approved course material. Model answers
-ship in the frontend for demo use. Only Lens Review is included; other modes,
-real TA feedback, and real authentication are outside this prototype's scope.
+ship in the frontend for demo use. Real TA feedback and real authentication are
+outside this prototype's scope.
 
 ## Training criteria and sample bank
 

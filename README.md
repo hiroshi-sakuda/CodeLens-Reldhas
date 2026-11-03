@@ -16,6 +16,7 @@ Open http://127.0.0.1:5173/.
 
 ## Features
 
+- Three practice functions: Lens Review, Dry Run, and Concept Match ([guide](docs/new-features.md))
 - Exercise brief and requirements above the code
 - Light and dark themes with a saved preference
 - Line annotations organized beside the review guide
