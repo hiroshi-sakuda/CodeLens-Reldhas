@@ -10,3 +10,4 @@
 .ta-notice{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;margin-bottom:12px;background:var(--palette-293328);border:1px solid var(--palette-b6dc92);border-radius:8px;font-size:13px}.ta-notice p{margin:0}.ta-notice strong{font-weight:600}.ta-notice button{flex-shrink:0}
 .ta-feedback-page{max-width:760px}.ta-feedback-page .progress-card{margin-top:14px}.ta-comment{margin-top:12px}
 @media(max-width:700px){.ta-notice{display:block}.ta-notice button{margin-top:10px}}
+.ta-table-scroll{position:relative}
