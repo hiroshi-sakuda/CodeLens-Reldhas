@@ -87,7 +87,7 @@ function Detail({ sample, status, edit, onEdit, onStatus, onRegenerate }: { samp
     {sample.story&&<p className="clean-answer">{sample.story}</p>}
     {sample.code&&<div className="studio-code editor-panel"><CodeBlock file="sample.py" code={sample.code}/></div>}
     <ul className="requirements studio-checks"><li><Check size={15}/><span>Code runs in the sandbox</span></li><li><Check size={15}/><span>{sample.function==='concept-match'?'One correct option, three plausible ones':sample.function==='lens-review'?'Planted correctness bugs fail a test':'Expected output comes from the real run'}</span></li></ul>
-    <label className="ta-label">{sample.function==='lens-review'?'Planted issues':'Explanation'}<textarea value={text} onChange={e=>setText(e.target.value)} onBlur={()=>{if(text!==(edit??sample.explanation))onEdit(text);}}/></label>
+    <label className="ta-label">{sample.function==='lens-review'?'Planted issues':'Explanation'}<textarea value={text} onChange={e=>{setText(e.target.value);onEdit(e.target.value);}}/></label>
     <div className="ta-buttons"><button className="primary" disabled={status==='approved'} onClick={()=>onStatus('approved')}><Check size={15}/>Approve</button><button className="secondary" onClick={onRegenerate}><RefreshCw size={15}/>Regenerate</button><button className="secondary" disabled={status==='rejected'} onClick={()=>onStatus('rejected')}><X size={15}/>Reject</button></div>
   </section>;
 }
@@ -103,7 +103,7 @@ function Materials({ studio, save }: { studio: any; save: (next: any) => void })
   }
   return <section className="progress-card"><h2>Materials</h2><p className="muted">Notes, tutorials, past papers and conventions the AI works from. In this demo only the file name is kept.</p>
     <form className="studio-form" onSubmit={upload}>
-      <label>File<input type="file" onChange={e=>setName(e.target.files?.[0]?.name||'')}/></label>
+      <label>File<input key={studio.materials.length} type="file" onChange={e=>setName(e.target.files?.[0]?.name||'')}/></label>
       <label>Week<input type="number" min={1} max={13} value={week} onChange={e=>setWeek(Number(e.target.value))}/></label>
       <label>Topic<select value={topic} onChange={e=>setTopic(e.target.value)}>{topics.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
       <button className="primary" disabled={!name}><Plus size={15}/>Upload</button>
