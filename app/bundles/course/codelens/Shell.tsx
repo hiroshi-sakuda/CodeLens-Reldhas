@@ -1,53 +1,120 @@
-import { useEffect, useState } from 'react';
-import { Check, ChevronRight, CircleHelp, Moon, Sun, X } from 'lucide-react';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
 import App from './App';
 import StudentHome from './StudentHome';
-import { features, type Go } from './features';
+import { features, type Go, type Note } from './features';
+import { BellIcon, CheckIcon, CloseIcon, HelpIcon, Logo, MoonIcon, PracticeIcon, SunIcon } from './icons';
+import { useTheme } from './theme';
 import './shell.css';
 type Role = 'student' | 'ta';
 type Route = { id: string; params: Record<string, any> };
+const slimExercises = false as boolean; // Stage 2 turns on the slim exercise bar.
 const taHome = () => features.find(f => f.role === 'ta' && f.kind === 'page')?.id || 'home';
-function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; onRole: (role: Role) => void }) {
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    try { return localStorage.getItem('codelens-theme') === 'light' ? 'light' : 'dark'; }
-    catch { return 'dark'; }
-  });
+
+function ThemeButton() {
+  const [theme, toggle] = useTheme();
+  const label = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  return <button className="icon-btn" onClick={toggle} aria-label={label} title={label}>{theme === 'dark' ? <SunIcon/> : <MoonIcon/>}</button>;
+}
+
+function Bell({ go }: { go: Go }) {
+  const [open, setOpen] = useState(false);
+  const [, refresh] = useState(0);
+  const box = useRef<HTMLDivElement>(null);
+  const notes: Note[] = features.flatMap(f => f.notifications?.() || []);
+  const unread = notes.filter(n => n.unread).length;
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#f5f7f8' : '#111517');
-    try { localStorage.setItem('codelens-theme', theme); } catch { /* Theme still works for this session. */ }
-  }, [theme]);
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => { if (e instanceof KeyboardEvent ? e.key === 'Escape' : !box.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', close); document.addEventListener('keydown', close);
+    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', close); };
+  }, [open]);
+  return <div className="bell" ref={box}>
+    <button className="icon-btn" aria-label={unread ? `Notifications, ${unread} new` : 'Notifications'} aria-expanded={open} onClick={() => setOpen(!open)}>
+      <BellIcon/>{unread > 0 && <span className="bell-badge badge-pop" aria-hidden="true">{unread}</span>}
+    </button>
+    {open && <section className="notes pop-in" aria-label="Notifications">
+      <div className="notes-head"><h2>Notifications</h2>{unread > 0 && <button className="text-link" onClick={() => { notes.forEach(n => n.markRead()); refresh(x => x + 1); }}>Mark all as read</button>}</div>
+      {notes.length ? notes.map(n => <button key={n.id} className="note row-hover" onClick={() => { n.markRead(); setOpen(false); go(n.to, n.params); }}>
+        <span className="note-avatar" aria-hidden="true">TA</span>
+        <span className="note-text"><span><strong>{n.title}</strong> {n.text}</span><small>Opens the review at the comment</small></span>
+        {n.unread && <span className="note-dot" aria-label="Unread"/>}
+      </button>) : <p className="notes-empty">Nothing new. When your TA comments on a review, it shows up here.</p>}
+    </section>}
+  </div>;
+}
+
+type NavItem = { id: string; label: string; Icon?: ComponentType<{ size?: number }>; badge?: number };
+export function TopBar({ role, routeId, go, onRole }: { role: Role; routeId: string; go: Go; onRole: (role: Role) => void }) {
+  const pages = features.filter(f => f.role === role && f.kind === 'page');
+  const items: NavItem[] = [
+    ...(role === 'student' ? [{ id: 'home', label: 'Practice', Icon: PracticeIcon }] : []),
+    ...pages.map(p => ({ id: p.id, label: p.label, Icon: p.navIcon, badge: p.badge?.() })),
+  ];
+  const current = items.some(i => i.id === routeId) ? routeId : role === 'student' ? 'home' : taHome();
+  const hasTa = features.some(f => f.role === 'ta');
+  return <header className="cl-topbar">
+    <button className="brand" onClick={() => go(role === 'student' ? 'home' : taHome())}><Logo/>CodeLens</button>
+    <nav className="topnav" aria-label="Main">{items.map(({ id, label, Icon, badge }) => {
+      const on = id === current;
+      return <button key={id} className={'topnav-item' + (on ? ' on' : '')} aria-current={on ? 'page' : undefined} onClick={() => go(id)}>
+        <span className="topnav-icon" aria-hidden="true">{Icon && <Icon size={on ? 15 : 18}/>}</span>{label}
+        {badge ? <span className="count-badge">{badge}<span className="sr-only"> waiting</span></span> : null}
+      </button>;
+    })}</nav>
+    <div className="topbar-end">
+      {hasTa && <div className="segmented" role="group" aria-label="View as">
+        {(['student', 'ta'] as Role[]).map(r => <button key={r} aria-pressed={role === r} onClick={() => role !== r && onRole(r)}>{r === 'ta' ? 'TA' : 'Student'}</button>)}
+      </div>}
+      <ThemeButton/>
+      {role === 'student' && <Bell go={go}/>}
+    </div>
+  </header>;
+}
+
+/* Exercise screens have no navigation: exit, title, help and Save and leave. Submit lives in the work panel. */
+export function SlimBar({ title, meta, onExit, help, aside, leave }: { title: string; meta?: string; onExit: () => void; help?: { title: string; steps: string[] }; aside?: React.ReactNode; leave?: { label: string; onClick: () => void } | null }) {
   const [showHelp, setShowHelp] = useState(false);
+  return <>
+    <header className="cl-slimbar">
+      <button className="icon-btn boxed" aria-label="Exit to Practice" onClick={onExit}><CloseIcon/></button>
+      <div className="cl-slimbar-title"><h1>{title}</h1>{meta && <span>{meta}</span>}</div>
+      {aside}
+      {help && <button className="icon-btn" aria-label={help.title} onClick={() => setShowHelp(true)}><HelpIcon/></button>}
+      <ThemeButton/>
+      {leave !== null && <button className="btn btn-outline btn-sm" onClick={leave?.onClick || onExit}>{leave?.label || 'Save and leave'}</button>}
+    </header>
+    {showHelp && help && <HelpModal help={help} onClose={() => setShowHelp(false)}/>}
+  </>;
+}
+
+export function HelpModal({ help, onClose, children }: { help: { title: string; steps: string[] }; onClose: () => void; children?: React.ReactNode }) {
+  return <div className="modal-backdrop" onClick={onClose}><section className="modal panel-in" role="dialog" aria-modal="true" aria-labelledby="help-title" onClick={e => e.stopPropagation()}>
+    <button autoFocus className="icon-btn modal-close" aria-label="Close help" onClick={onClose}><CloseIcon/></button>
+    <h2 id="help-title">{help.title}</h2><ol>{help.steps.map(step => <li key={step}>{step}</li>)}</ol>{children}
+    <button className="btn btn-primary" onClick={onClose}>Got it<CheckIcon className=""/></button>
+  </section></div>;
+}
+
+function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; onRole: (role: Role) => void }) {
   const feature = features.find(f => f.id === route.id);
   const has = (id: string) => id === 'lens-review' || features.some(f => f.id === id);
-  const pages = features.filter(f => f.role === role && f.kind === 'page');
   const screenProps = { params: route.params, go, has };
-  return <div className="app-shell"><div className="main-shell">
-    <header className="topbar">
-      <nav className="breadcrumb-nav shell-nav" aria-label="Main">
-        <span className="breadcrumb">CodeLens</span>
-        {role==='ta'?<div className="ta-tabs">{pages.map(p=><button key={p.id} className={route.id===p.id?'current':''} aria-current={route.id===p.id?'page':undefined} onClick={()=>go(p.id)}>{p.label}</button>)}</div>:<><ChevronRight size={14}/>{feature?<><button onClick={()=>go('home')}>Practice</button><ChevronRight size={14}/><span aria-current="page">{feature.label}</span></>:<span aria-current="page">Practice</span>}</>}
-      </nav>
-      <div className="topbar-actions">
-        {role==='student'&&pages.map(p=><button key={p.id} className={'header-link'+(route.id===p.id?' current':'')} onClick={()=>go(p.id)}>{p.label}</button>)}
-        {feature?.help&&<button className="icon-button" aria-label="How it works" onClick={()=>setShowHelp(true)}><CircleHelp size={17}/></button>}
-        {features.some(f=>f.role==='ta')&&(role==='ta'||!feature)&&<div className="role-switch" role="group" aria-label="View as"><button aria-pressed={role==='student'} onClick={()=>onRole('student')}>Student</button><button aria-pressed={role==='ta'} onClick={()=>onRole('ta')}>TA</button></div>}
-        <button className="theme-toggle" onClick={()=>setTheme(theme==='dark'?'light':'dark')} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'} title={theme==='dark'?'Switch to light mode':'Switch to dark mode'}>{theme==='dark'?<Sun size={16}/>:<Moon size={16}/>}<span>{theme==='dark'?'Light mode':'Dark mode'}</span></button>
-        <span className="local-status"><span className="live-dot"/>Saved locally</span>
-      </div>
-    </header>
-    <main className={feature?.kind==='practice'?'review-page':'shell-page'}>
-      {feature?<feature.Screen key={route.id+JSON.stringify(route.params)} {...screenProps}/>:<StudentHome {...screenProps}/>}
-      <footer><span>Demo · Sample exercises and simulated grading</span></footer>
-    </main>
-    {showHelp&&feature?.help&&<div className="modal-backdrop" onClick={()=>setShowHelp(false)}><section className="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" onClick={e=>e.stopPropagation()}><button autoFocus className="icon-button close-modal" aria-label="Close help" onClick={()=>setShowHelp(false)}><X/></button><h2 id="help-title">{feature.help.title}</h2><ol>{feature.help.steps.map(step=><li key={step}>{step}</li>)}</ol><button className="primary" onClick={()=>setShowHelp(false)}>Got it<Check size={16}/></button></section></div>}
-  </div></div>;
+  // Exercises draw their own slim bar; every other screen sits on a sheet under the top bar.
+  if (slimExercises && feature && feature.kind === 'practice') return <div className="app-frame exercise"><feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/></div>;
+  return <div className="app-frame">
+    <TopBar role={role} routeId={route.id} go={go} onRole={onRole}/>
+    <main className="sheet page"><div className="page-inner">
+      {feature ? <feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/> : <StudentHome {...screenProps}/>}
+      <p className="cl-demo-note">Demo with sample exercises and simulated grading. Progress is saved in this browser.</p>
+    </div></main>
+  </div>;
 }
+
 export default function Shell() {
   const [route, setRoute] = useState<Route>({ id: 'home', params: {} });
   const [role, setRole] = useState<Role>('student');
+  useTheme();
   const go: Go = (id, params = {}) => { setRoute({ id, params }); window.scrollTo({ top: 0 }); };
-  const studentPage = features.find(f => f.role === 'student' && f.kind === 'page');
-  if (route.id === 'lens-review') return <App onHome={() => go('home')} extraLink={studentPage && { label: studentPage.label, onClick: () => go(studentPage.id) }} openReview={route.params.reviewId}/>;
+  if (route.id === 'lens-review') return <div className="app-frame exercise"><App onHome={() => go('home')} extraLink={{ label: 'Skill map', onClick: () => go('skill-map') }} openReview={route.params.reviewId}/></div>;
   return <Frame route={route} role={role} go={go} onRole={next => { setRole(next); go(next === 'ta' ? taHome() : 'home'); }}/>;
 }

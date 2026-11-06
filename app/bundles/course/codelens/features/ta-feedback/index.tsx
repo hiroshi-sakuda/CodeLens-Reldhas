@@ -1,20 +1,22 @@
 import { useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import type { Feature, ScreenProps } from '../../features';
+import type { Feature, Note, ScreenProps } from '../../features';
 import { exercises } from '../../model.js';
 import { readTa, writeTa } from '../../practice-log.js';
 import { aiSummary, taFeedbackFor } from '../review-queue/queue.js';
 import { allReviews, allSubmissions, demoStudent } from '../review-queue/submissions.js';
 const mine = () => allSubmissions().filter(s => s.student === demoStudent);
 const titleOf = (exercise: string) => exercises.find(e => e.id === exercise)?.title;
-function Notices({ go }: ScreenProps) {
-  const seen = readTa().seen as string[];
+// One bell notification per review with TA feedback the student hasn't opened yet.
+function notifications(): Note[] {
   const reviews = allReviews();
-  const fresh = mine().filter(s => {
+  return mine().flatMap(s => {
     const sent = taFeedbackFor(reviews.filter((r: any) => r.attemptId === s.id)).sent.length;
-    return sent > 0 && !seen.includes(s.id + ':' + sent);
+    if (!sent) return [];
+    const stamp = s.id + ':' + sent;
+    const markRead = () => { const ta = readTa(); if (!ta.seen.includes(stamp)) writeTa({ ...ta, seen: [...ta.seen, stamp] }); };
+    return [{ id: stamp, title: 'Your TA commented', text: `on your Lens Review of ${titleOf(s.exercise)}`, unread: !readTa().seen.includes(stamp), to: 'ta-feedback', params: { attemptId: s.id }, markRead }];
   });
-  return <>{fresh.map(s=><section className="ta-notice" key={s.id}><p><strong>New TA feedback</strong> on your Lens Review of {titleOf(s.exercise)}.</p><button className="primary" onClick={()=>go('ta-feedback',{attemptId:s.id})}>View feedback<ArrowRight size={16}/></button></section>)}</>;
 }
 function TaFeedback({ params, go }: ScreenProps) {
   const submission = mine().find(s => s.id === params.attemptId);
@@ -37,5 +39,5 @@ function TaFeedback({ params, go }: ScreenProps) {
     <section className="progress-card"><h2>Your comments</h2>{submission.noIssues?<div className="history-comment"><strong>No issues found</strong><p>{submission.justification}</p></div>:submission.comments.map((c: any)=><div className="history-comment" key={c.id}><strong>{c.dimension} · L{c.start}–{c.end}</strong><p>{c.claim}</p><p>{c.reasoning}</p><code>{c.fix}</code></div>)}</section>
   </div>;
 }
-const feature: Feature = { id: 'ta-feedback', role: 'student', kind: 'hidden', order: 30, label: 'TA feedback', Screen: TaFeedback, HomePanel: Notices };
+const feature: Feature = { id: 'ta-feedback', role: 'student', kind: 'hidden', order: 30, label: 'TA feedback', Screen: TaFeedback, notifications };
 export default feature;

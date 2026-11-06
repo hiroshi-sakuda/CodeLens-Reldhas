@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Sparkles, ScanLine, ChevronRight, ArrowLeft, ArrowRight, Check, Plus, X, MessageSquare, BookOpen, BarChart3, FileCode2, CircleHelp, Trash2, Sun, Moon } from 'lucide-react';
 import PythonConsole from './PythonConsole';
+import { useTheme } from './theme';
 import { highlight } from './CodeBlock';
 import DemoFill from './DemoFill';
 import LensFeedback from './LensFeedback';
@@ -17,15 +18,7 @@ const empty = { claim: '', reasoning: '', fix: '', dimension: 'Efficiency' };
 function readSaved() { try { const s = JSON.parse(localStorage.getItem('codelens-demo-v1') || '{}'); return { drafts: s.drafts || {}, attempts: Array.isArray(s.attempts) ? s.attempts : [], currentReviewId: s.currentReviewId || Object.keys(s.drafts || {})[0] || 'seats' }; } catch { return { drafts: {}, attempts: [], currentReviewId: 'seats' }; } }
 // In the practice shell (onHome set), saved reviews are listed on the home screen, which opens one with openReview.
 export default function App({ onHome, extraLink, openReview }: { onHome?: () => void; extraLink?: { label: string; onClick: () => void }; openReview?: string }) {
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    try { return localStorage.getItem('codelens-theme') === 'light' ? 'light' : 'dark'; }
-    catch { return 'dark'; }
-  });
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#f5f7f8' : '#111517');
-    try { localStorage.setItem('codelens-theme', theme); } catch { /* Theme still works for this session. */ }
-  }, [theme]);
+  const [theme, toggleTheme] = useTheme();
   const [initial] = useState(readSaved);
   const [drafts,setDrafts] = useState<Record<string,Draft>>(initial.drafts);
   const [attempts,setAttempts] = useState<Attempt[]>(initial.attempts);
@@ -77,7 +70,7 @@ export default function App({ onHome, extraLink, openReview }: { onHome?: () => 
   function nextExercise() { startReview(nextPractice(exercise.id, focus, !!draft.randomFocus)); window.scrollTo({top:0,behavior:'smooth'}); }
   const recent = attempts.filter(a=>Date.now()-new Date(a.date).getTime()<=30*86400000);
   return <div className="app-shell">
-    <div className="main-shell"><header className="topbar"><nav className="breadcrumb-nav" aria-label="Breadcrumb"><span className="breadcrumb">CodeLens</span><ChevronRight size={14}/>{onHome&&<><button onClick={onHome}>Practice</button><ChevronRight size={14}/></>}{page==='workspace'?showSetup?<span aria-current="page">Training criteria</span>:<><button onClick={()=>setShowSetup(true)}>Training criteria</button><ChevronRight size={14}/><span aria-current="page">Lens Review</span></>:<span aria-current="page">My progress</span>}</nav><div className="topbar-actions">{extraLink&&<button className="header-link" onClick={extraLink.onClick}>{extraLink.label}</button>}<button className="icon-button" aria-label="How it works" onClick={()=>setShowHelp(true)}><CircleHelp size={17}/></button><button className="theme-toggle" onClick={()=>setTheme(theme==='dark'?'light':'dark')} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'} title={theme==='dark'?'Switch to light mode':'Switch to dark mode'}>{theme==='dark'?<Sun size={16}/>:<Moon size={16}/>}<span>{theme==='dark'?'Light mode':'Dark mode'}</span></button><span className="local-status"><span className="live-dot"/>{storageError?'Not saved':'Saved locally'}</span></div></header>
+    <div className="main-shell"><header className="topbar"><nav className="breadcrumb-nav" aria-label="Breadcrumb"><span className="breadcrumb">CodeLens</span><ChevronRight size={14}/>{onHome&&<><button onClick={onHome}>Practice</button><ChevronRight size={14}/></>}{page==='workspace'?showSetup?<span aria-current="page">Training criteria</span>:<><button onClick={()=>setShowSetup(true)}>Training criteria</button><ChevronRight size={14}/><span aria-current="page">Lens Review</span></>:<span aria-current="page">My progress</span>}</nav><div className="topbar-actions">{extraLink&&<button className="header-link" onClick={extraLink.onClick}>{extraLink.label}</button>}<button className="icon-button" aria-label="How it works" onClick={()=>setShowHelp(true)}><CircleHelp size={17}/></button><button className="theme-toggle" onClick={toggleTheme} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'} title={theme==='dark'?'Switch to light mode':'Switch to dark mode'}>{theme==='dark'?<Sun size={16}/>:<Moon size={16}/>}<span>{theme==='dark'?'Light mode':'Dark mode'}</span></button><span className="local-status"><span className="live-dot"/>{storageError?'Not saved':'Saved locally'}</span></div></header>
       <main className={page==='workspace'?(showSetup?'setup-page':'review-page'):'progress-page'}>{page==='progress'&&<><button className="progress-back" onClick={()=>{setPage('workspace');setShowSetup(true);}}><ArrowLeft size={17}/>Back to review selection</button><h1 className="progress-heading">My progress</h1></>}
       {page==='workspace' ? showSetup ? <><ReviewSetup onStart={startReview}/>{!onHome&&Object.entries(drafts).some(([,d])=>!d.submitted)&&<details className="saved-reviews"><summary>Saved reviews</summary>{Object.entries(drafts).filter(([,d])=>!d.submitted).map(([id,d])=><button className="secondary" key={id} onClick={()=>resumeReview(id)}>{exercises.find(e=>e.id===(d.exerciseId||id))?.title || 'Review'} · {d.randomFocus?'Random focus':(d.focus||dimensions).join(', ')} · {d.comments.length} annotations</button>)}</details>}</> : <><div className="workspace-toolbar"><div className="exercise-select"><strong>{exercise.topic}</strong></div><div className="exercise-meta"><span>Python</span></div></div>
       <div className="review-focus-summary"><span>Criteria</span><strong>{draft.randomFocus&&!draft.submitted?'Random · revealed after submission':focus.join(' · ')}</strong></div>

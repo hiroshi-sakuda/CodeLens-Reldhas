@@ -7,6 +7,7 @@ import { exercises } from '../../model.js';
 import { generatedSamples } from './generated-samples.js';
 import { approvedCounts, nextSamples, regenerate, seedStatuses } from './studio.js';
 import './content-studio.css';
+import { StudioIcon } from '../../icons';
 const lensSamples = exercises.map(e => ({ id: 'lr-' + e.id, function: 'lens-review', topicId: null, difficulty: null, title: `${e.title} (${e.findings.length} planted ${e.findings.length === 1 ? 'issue' : 'issues'})`, code: e.code.join('\n'), explanation: e.findings.map(f => f.claim).join(' ') || 'This code has no planted issues.', topicLabel: e.topic }));
 const library: any[] = [...generatedSamples, ...lensSamples];
 const key = 'codelens-studio-v1';
@@ -116,5 +117,5 @@ function Materials({ studio, save }: { studio: any; save: (next: any) => void })
     <p className="muted studio-note">In this demo only the file name is kept.</p>
   </>;
 }
-const feature: Feature = { id: 'content-studio', role: 'ta', kind: 'page', order: 20, label: 'Content Studio', Screen: ContentStudio };
+const feature: Feature = { id: 'content-studio', role: 'ta', kind: 'page', order: 21, label: 'Content Studio', navIcon: StudioIcon, Screen: ContentStudio };
 export default feature;

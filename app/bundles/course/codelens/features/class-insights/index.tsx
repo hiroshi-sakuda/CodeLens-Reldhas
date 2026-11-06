@@ -7,6 +7,7 @@ import { sampleSubmissions } from '../review-queue/submissions.js';
 import { computeInsights } from './insights.js';
 import { sampleClass, sampleVotes } from './sample-class.js';
 import './class-insights.css';
+import { InsightsIcon } from '../../icons';
 const pct = (value: number | null) => value == null ? '—' : Math.round(value * 100) + '%';
 const you = 'Demo student';
 function loadInsights() {
@@ -53,5 +54,5 @@ function ClassInsights() {
     </section>
   </div>;
 }
-const feature: Feature = { id: 'class-insights', role: 'ta', kind: 'page', order: 22, label: 'Class Insights', Screen: ClassInsights };
+const feature: Feature = { id: 'class-insights', role: 'ta', kind: 'page', order: 22, label: 'Class Insights', navIcon: InsightsIcon, Screen: ClassInsights };
 export default feature;

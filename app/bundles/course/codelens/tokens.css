@@ -1,0 +1,132 @@
+/* The lens style: one set of design tokens for light and dark, shared controls and the motion layer.
+   Source of truth: VisualSystem board on the CodeLens UX canvas. */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+
+:root{
+  --font-title:'Bricolage Grotesque',sans-serif;
+  --font-ui:'Geist',sans-serif;
+  --font-mono:'Geist Mono',monospace;
+  --r-sheet:18px;--r-card:16px;--r-ctl:12px;--r-pill:999px;--r-bracket:23px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --t-press:120ms;--t-hover:150ms;--t-panel:180ms;--t-check:250ms;--t-frame:280ms;--t-bar:900ms;
+
+  color-scheme:light;
+  --ground:#f3f5f4;--sheet:#ffffff;--sheet-2:#f8faf9;--hover:#f6f8f7;--nav-hover:#e8ece9;--nav-current:#ffffff;
+  --line:#e2e7e4;--line-soft:#edf0ee;--line-strong:#c9d1cd;
+  --ink:#1b2421;--ink-soft:#4a5652;--ink-faint:#6b7672;
+  --action:#c6f07c;--action-hover:#b8ea62;--action-ring:rgba(198,240,124,.35);--on-action:#1b2421;
+  --link:#335e14;--focus:#8fd14f;
+  --chip-bg:#1b2421;--chip-text:#c6f07c;--chip-edge:#1b2421;
+  --segment-bg:#e8ece9;--segment-on:#ffffff;--segment-shadow:0 1px 2px rgba(27,36,33,.1);
+  --bar:#1b2421;--track:#edf0ee;
+  --amber:#f0a23a;--amber-bg:#fdf1de;--amber-text:#7a4300;--amber-strong:#8a4b00;--amber-edge:#f0d7ad;--amber-box:#fffaf2;--amber-line:#b36b00;
+  --good-bg:#e9f7d3;--good-text:#2b4f10;--good-edge:#cfe6b4;--good-box:#f4faea;
+  --bad-bg:#fde8e1;--bad-text:#9a2f0c;--signal:#c8411f;--on-signal:#ffffff;
+  --input-bg:#ffffff;--input-line:#c9d1cd;--placeholder:#6b7672;
+  --syntax-keyword:#8a2bb0;--syntax-number:#a35200;--syntax-string:#2a7a3a;--syntax-comment:#6b7672;
+  --shadow-pop:0 1px 2px rgba(27,36,33,.06),0 16px 40px -8px rgba(27,36,33,.22);
+  --backdrop:rgba(27,36,33,.35);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0e1211;--sheet:#151a19;--sheet-2:#1a201f;--hover:#1f2625;--nav-hover:#1c2221;--nav-current:#171d1c;
+  --line:#262e2b;--line-soft:#1f2625;--line-strong:#3a4441;
+  --ink:#e8edea;--ink-soft:#a3afaa;--ink-faint:#8a9691;
+  --action:#b6dc92;--action-hover:#c6e4a6;--action-ring:rgba(182,220,146,.16);--on-action:#142010;
+  --link:#b6dc92;--focus:#b6dc92;
+  --chip-bg:#26311d;--chip-text:#b6dc92;--chip-edge:#3d5226;
+  --segment-bg:#1a201f;--segment-on:#2a3230;--segment-shadow:none;
+  --bar:#e8edea;--track:#262e2b;
+  --amber:#f0a23a;--amber-bg:#4a3519;--amber-text:#ffe2b3;--amber-strong:#f5b962;--amber-edge:#7a5a28;--amber-box:#2b2216;--amber-line:#f5b962;
+  --good-bg:#2a3a1f;--good-text:#cfe8b0;--good-edge:#3d5226;--good-box:#1b2417;
+  --bad-bg:#43211a;--bad-text:#ffb4a0;--signal:#e2603c;--on-signal:#1a0802;
+  --input-bg:#101514;--input-line:#323b38;--placeholder:#7d8984;
+  --syntax-keyword:#d4a6e6;--syntax-number:#f5b962;--syntax-string:#a8d48a;--syntax-comment:#8a9691;
+  --shadow-pop:0 1px 2px rgba(0,0,0,.4),0 16px 40px -8px rgba(0,0,0,.6);
+  --backdrop:rgba(0,0,0,.55);
+}
+
+/* Base */
+html,body{background:var(--ground)}
+:root{font-family:var(--font-ui);font-size:14.5px;line-height:1.5;color:var(--ink);background:var(--ground)}
+body{margin:0;color:var(--ink)}
+h1,h2,h3{font-family:var(--font-title);letter-spacing:-.3px;font-weight:600;color:var(--ink)}
+code,pre,kbd,samp{font-family:var(--font-mono)}
+a{color:var(--link)}a:hover{color:var(--ink)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+::placeholder{color:var(--placeholder)}
+
+/* Shared controls. Green starts or submits; outline leaves or cancels; a text link changes a setting. */
+.btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:var(--r-ctl);font:inherit;font-weight:600;color:var(--ink);text-decoration:none;white-space:nowrap;cursor:pointer;transition:transform var(--t-press) var(--ease),background-color var(--t-hover),border-color var(--t-hover),box-shadow var(--t-hover)}
+.btn:active:not(:disabled){transform:translateY(1px) scale(.98)}
+.btn-primary{border:0;background:var(--action);color:var(--on-action)}
+.btn-primary:hover:not(:disabled){background:var(--action-hover);box-shadow:0 0 0 4px var(--action-ring)}
+.btn-outline{border:1px solid var(--line-strong);background:var(--sheet);color:var(--ink)}
+.btn-outline:hover:not(:disabled){background:var(--ground)}
+.btn:disabled{opacity:1;background:var(--line-soft);color:var(--ink-faint);border-color:transparent;box-shadow:none;cursor:not-allowed}
+.btn-sm{min-height:40px;padding:0 14px}
+.btn-block{display:flex;width:100%}
+.text-link{display:inline-flex;align-items:center;gap:6px;border:0;padding:0;background:none;font:inherit;font-weight:500;color:var(--link);cursor:pointer;text-decoration:none}
+.text-link:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.icon-btn{box-sizing:border-box;position:relative;width:40px;height:40px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:var(--r-ctl);background:transparent;color:var(--ink);cursor:pointer;transition:background-color var(--t-hover),transform var(--t-press) var(--ease)}
+.icon-btn:hover,.icon-btn[aria-expanded="true"]{background:var(--nav-hover)}
+.icon-btn:active{transform:translateY(1px) scale(.98)}
+.icon-btn.boxed{background:var(--sheet);box-shadow:inset 0 0 0 1px var(--line)}
+
+.sheet{background:var(--sheet);border-radius:var(--r-sheet);box-shadow:0 0 0 1px var(--line)}
+.card{position:relative;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-card);transition:border-color .2s,background-color .2s}
+.card.hoverable:hover{border-color:var(--line-strong)}
+:root[data-theme="dark"] .card.hoverable:hover{background:#191f1e}
+.tile{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:40px;height:40px;border-radius:var(--r-ctl);background:var(--ground);color:var(--ink)}
+.tile.sm{width:32px;height:32px;border-radius:10px}
+
+/* Chips: pills. Strong = ink in light, tinted sage in dark. */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:var(--r-pill);font-size:13px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;background:var(--ground);color:var(--ink-soft)}
+.chip.strong{background:var(--chip-bg);color:var(--chip-text);box-shadow:inset 0 0 0 1px var(--chip-edge);font-size:12px}
+.chip.good{background:var(--good-bg);color:var(--good-text)}
+.chip.warn{background:var(--amber-bg);color:var(--amber-text)}
+.chip.bad{background:var(--bad-bg);color:var(--bad-text)}
+.chip.score{min-width:84px;justify-content:center}
+.chip-toggle{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--line-strong);background:var(--sheet);font:inherit;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:background-color var(--t-hover),border-color var(--t-hover),color var(--t-hover),transform var(--t-press) var(--ease)}
+.chip-toggle:active{transform:scale(.96)}
+.chip-toggle[aria-pressed="true"]{border-color:var(--chip-edge);background:var(--chip-bg);color:var(--chip-text);font-weight:600}
+:root[data-theme="dark"] .chip-toggle[aria-pressed="true"]{border-color:var(--action)}
+.chip-toggle:disabled{opacity:.5;cursor:not-allowed}
+
+/* Fields: white in light, recessed in dark. */
+.field{display:flex;flex-direction:column;gap:6px;font-weight:600}
+.field>small{font-size:13px;font-weight:400;color:var(--ink-soft)}
+.input,.field input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),.field textarea,.field select{box-sizing:border-box;width:100%;padding:11px 14px;border:1px solid var(--input-line);border-radius:var(--r-ctl);background:var(--input-bg);color:var(--ink);font:inherit;font-weight:400}
+.field textarea{resize:vertical;min-height:84px;line-height:1.5}
+.mono{font-family:var(--font-mono)}
+
+/* Score bars fill once when a page opens. */
+.bar{height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:3px;background:var(--bar);transform-origin:left center;animation:cl-fill var(--t-bar) var(--ease) both}
+.bar>span.warn{background:var(--amber)}
+@keyframes cl-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* Viewfinder brackets frame what the lens is on. Concentric with a r16 card: r23 at a 7px offset. */
+.vf{position:relative}
+.vf>.vf-c{position:absolute;width:30px;height:30px;opacity:0;pointer-events:none;border:0 solid var(--ink);transition:opacity var(--t-hover),transform var(--t-frame) var(--ease)}
+.vf>.vf-tl{top:-7px;left:-7px;border-top-width:2px;border-left-width:2px;border-top-left-radius:var(--r-bracket);transform:translate(8px,8px)}
+.vf>.vf-tr{top:-7px;right:-7px;border-top-width:2px;border-right-width:2px;border-top-right-radius:var(--r-bracket);transform:translate(-8px,8px)}
+.vf>.vf-bl{bottom:-7px;left:-7px;border-bottom-width:2px;border-left-width:2px;border-bottom-left-radius:var(--r-bracket);transform:translate(8px,-8px)}
+.vf>.vf-br{bottom:-7px;right:-7px;border-bottom-width:2px;border-right-width:2px;border-bottom-right-radius:var(--r-bracket);transform:translate(-8px,-8px)}
+.vf:hover>.vf-c,.vf:focus-within>.vf-c,.vf.on>.vf-c{opacity:1;transform:none}
+
+/* Motion: panels grow from their button, checks draw in, badges pop. */
+.pop-in{transform-origin:top right;animation:cl-popin var(--t-panel) var(--ease) both}
+@keyframes cl-popin{from{opacity:0;transform:translateY(-4px) scale(.97)}to{opacity:1;transform:none}}
+.panel-in{transform-origin:top center;animation:cl-panel var(--t-panel) var(--ease) both}
+@keyframes cl-panel{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.draw path{stroke-dasharray:24;animation:cl-draw var(--t-check) var(--ease) both}
+@keyframes cl-draw{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
+.badge-pop{animation:cl-pop .45s cubic-bezier(.3,1.6,.5,1) .6s both}
+@keyframes cl-pop{from{transform:scale(0)}to{transform:scale(1)}}
+.row-hover{transition:background-color var(--t-hover)}
+.row-hover:hover{background:var(--hover)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .vf>.vf-c{transform:none}
+}

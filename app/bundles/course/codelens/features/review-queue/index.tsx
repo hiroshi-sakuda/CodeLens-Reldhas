@@ -1,4 +1,10 @@
 import type { Feature } from '../../features';
+import { QueueIcon } from '../../icons';
+import { exercises } from '../../model.js';
+import { readTa } from '../../practice-log.js';
+import { buildQueue, queueCounts } from './queue.js';
+import { allReviews, allSubmissions } from './submissions.js';
 import ReviewQueue from './ReviewQueue';
-const feature: Feature = { id: 'review-queue', role: 'ta', kind: 'page', order: 21, label: 'Review Queue', Screen: ReviewQueue };
+const waiting = () => queueCounts(buildQueue(allSubmissions(), allReviews(), readTa().watching, exercises)).waiting;
+const feature: Feature = { id: 'review-queue', role: 'ta', kind: 'page', order: 20, label: 'Review Queue', navIcon: QueueIcon, badge: waiting, Screen: ReviewQueue };
 export default feature;
