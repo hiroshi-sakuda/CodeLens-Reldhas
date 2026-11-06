@@ -7,18 +7,24 @@ import DemoFill from './DemoFill';
 import { goodReview, wrongReview } from './lens-demo.js';
 import AnswerFeedback, { type AnswerRating } from './AnswerFeedback';
 import CriterionGuide from './CriterionGuide';
-import LensResult, { ResultCode, scoreText } from './LensResult';
+import LensResult, { ResultCode, scoreText, TaNote } from './LensResult';
+import { taFeedbackFor } from './features/review-queue/queue.js';
+import { allReviews } from './features/review-queue/submissions.js';
 import ReviewSetup, { type PracticeConfig } from './ReviewSetup';
 import { submissionError, nextPractice } from './review-flow.js';
-import { exercises, dimensions, assess, consoleExample } from './model.js';
+import { exercises, dimensions, assess, consoleExample, normalizeComment } from './model.js';
 import { CheckIcon, LensIcon, SparkIcon, TerminalIcon } from './icons';
 import { PanelFooter, ResultChip, WorkArea } from './ui';
 import './lens.css';
-type Comment = { id: string; start: number; end: number; dimension: string; claim: string; reasoning: string; fix: string };
+type Comment = { id: string; start: number; end: number; lenses: string[]; text: string; fix: string };
 type Attempt = { id: string; exercise: string; date: string; comments: Comment[]; result: ReturnType<typeof assess>; focus?: string[]; randomFocus?: boolean; noIssues?: boolean; justification?: string };
 type Draft = { ratings?: { feedback?: AnswerRating; answer?: AnswerRating }; comments: Comment[]; submitted: boolean; exerciseId?: string; topic?: string; focus?: string[]; randomFocus?: boolean; noIssues?: boolean; justification?: string; attemptId?: string; editor?: { range: number[]; form: typeof empty; editing: string | null } };
-const empty = { claim: '', reasoning: '', fix: '', dimension: 'Efficiency' };
-export const help = { title: 'How Lens Review works', steps: ['Read the situation and compare the code with the requirements.', 'Click a line number, or drag across lines, to select an issue.', 'Choose the lens, say what is wrong and why, and propose a fix.', 'Nothing to flag? Tick “I found no issues” and say what you checked.', 'Submit to see your score and feedback on each annotation.'] };
+const empty = { text: '', fix: '', lenses: [] as string[] };
+// A fresh form starts with the lens already chosen only when there is a single one to choose.
+const freshForm = (lenses: string[]) => ({ ...empty, lenses: lenses.length === 1 ? [...lenses] : [] });
+// Saved drafts from before the merge had claim, reasoning and one lens; turn them into the new form.
+const toForm = (saved: any) => { if (!saved) return null; const c = normalizeComment(saved); return { text: c.text, fix: c.fix, lenses: c.lenses }; };
+export const help = { title: 'How Lens Review works', steps: ['Read the situation and compare the code with the requirements.', 'Click a line number, or drag across lines, to select an issue.', 'Choose the lenses that fail, say what is wrong and why, and propose a fix.', 'Nothing to flag? Tick “I found no issues” and say what you checked.', 'Submit to see your score and feedback on each annotation.'] };
 function readSaved() { try { const s = JSON.parse(localStorage.getItem('codelens-demo-v1') || '{}'); return { drafts: s.drafts || {}, attempts: Array.isArray(s.attempts) ? s.attempts : [], currentReviewId: s.currentReviewId || Object.keys(s.drafts || {})[0] || 'seats' }; } catch { return { drafts: {}, attempts: [], currentReviewId: 'seats' }; } }
 const linesLabel = (a: number, b: number) => a === b ? `Line ${a}` : `Lines ${a}–${b}`;
 
@@ -41,6 +47,8 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
   const exercise = exercises.find(e => e.id === exerciseId) || exercises[0];
   const focus = draft.focus || dimensions;
   const allowedFocus = draft.randomFocus ? dimensions : focus;
+  // Random mode: any lens may apply, so one annotation can name several.
+  const multiLens = !!draft.randomFocus;
   const result = assess(exercise, draft.comments, { noIssues: !!draft.noIssues, justification: draft.justification || '' });
   useEffect(() => { try { localStorage.setItem('codelens-demo-v1', JSON.stringify({ drafts, attempts, currentReviewId: reviewId })); setStorageError(false); } catch { setStorageError(true); } }, [drafts, attempts, reviewId]);
   useEffect(() => {
@@ -62,13 +70,13 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
     const id = crypto.randomUUID();
     setDrafts(d => ({ ...d, [id]: { ...config, comments: [], submitted: false, noIssues: false, justification: '' } }));
     setReviewId(id); setShowSetup(false); setTab('annotations');
-    setRange([]); setEditing(null); setForm({ ...empty, dimension: config.randomFocus ? dimensions[0] : config.focus[0] }); setError('');
+    setRange([]); setEditing(null); setForm(freshForm(config.randomFocus ? dimensions : config.focus)); setError('');
   }
   function resumeReview(id: string) {
     const saved = drafts[id];
     setReviewId(id); setShowSetup(false);
     setRange(saved.submitted ? [] : saved.editor?.range || []); setEditing(saved.submitted ? null : saved.editor?.editing || null);
-    setForm(saved.editor?.form || { ...empty, dimension: saved.focus?.[0] || dimensions[0] });
+    setForm(toForm(saved.editor?.form) || freshForm(saved.randomFocus ? dimensions : saved.focus || dimensions));
     setTab(saved.submitted ? 'feedback' : 'annotations'); setError('');
   }
   const opened = useRef(false);
@@ -78,10 +86,10 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
     if (params.start) startReview(params.start);
     else if (params.reviewId && drafts[params.reviewId]) resumeReview(params.reviewId);
   }, []);
-  function clearEditor() { setRange([]); setEditing(null); setForm({ ...empty, dimension: allowedFocus[0] }); setError(''); }
+  function clearEditor() { setRange([]); setEditing(null); setForm(freshForm(allowedFocus)); setError(''); }
   function saveComment(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.claim.trim() || !form.reasoning.trim() || !form.fix.trim()) { setError('Complete the claim, reasoning, and proposed fix.'); return; }
+    if (!form.lenses.length || !form.text.trim() || !form.fix.trim()) { setError(!form.lenses.length ? 'Choose the lens that fails here.' : 'Say what is wrong and why, and propose a fix.'); return; }
     const comment = { ...form, id: editing || crypto.randomUUID(), start: Math.min(...range), end: Math.max(...range) };
     update({ ...draft, noIssues: false, justification: '', comments: editing ? draft.comments.map(c => c.id === editing ? comment : c) : [...draft.comments, comment] });
     clearEditor();
@@ -132,13 +140,13 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
     <button role="tab" aria-selected={tab === 'guide'} onClick={() => setTab('guide')}>Review guide</button>
     <button role="tab" aria-selected={tab === 'feedback'} onClick={() => setTab('feedback')}>Feedback</button>
   </div>;
-  const saved = draft.comments.map((c, i) => <article key={c.id} className="saved-note">
-    <div className="note-head"><span className="lines">{linesLabel(c.start, c.end)}</span><span className="lens-tag">{c.dimension}</span>
-      {!draft.submitted && <span className="saved-actions"><button className="text-link" onClick={() => { setEditing(c.id); setRange([c.start, c.end]); setForm({ dimension: c.dimension, claim: c.claim, reasoning: c.reasoning, fix: c.fix }); }}>Edit</button>
+  const saved = draft.comments.map(normalizeComment).map((c, i) => <article key={c.id} className="saved-note">
+    <div className="note-head"><span className="lines">{linesLabel(c.start, c.end)}</span>{c.lenses.map((l: string) => <span key={l} className="lens-tag">{l}</span>)}
+      {!draft.submitted && <span className="saved-actions"><button className="text-link" onClick={() => { setEditing(c.id); setRange([c.start, c.end]); setForm({ lenses: c.lenses, text: c.text, fix: c.fix }); }}>Edit</button>
         <button className="icon-btn" aria-label={'Delete annotation ' + (i + 1)} onClick={() => { update({ ...draft, comments: draft.comments.filter(x => x.id !== c.id) }); if (editing === c.id) clearEditor(); }}><Trash2 size={15} strokeWidth={1.8}/></button></span>}
     </div>
-    <p>{c.claim}</p>
-    <details className="more-details"><summary>Reasoning and proposed fix</summary><p>{c.reasoning}</p><p className="fix-line"><strong>Fix</strong><span>{c.fix}</span></p></details>
+    <p>{c.text}</p>
+    <p className="fix-line"><strong>Fix</strong><span>{c.fix}</span></p>
   </article>);
   const guide = <section className="panel-in lr-guide">
     <div><h2 className="panel-title">Your lenses</h2>
@@ -146,6 +154,7 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
     <ol><li>Read the requirements.</li><li>Select lines that break one and explain why.</li><li>Suggest a fix for each.</li><li>Nothing to flag? Tick “I found no issues”.</li></ol>
   </section>;
 
+  const ta = draft.attemptId ? taFeedbackFor(allReviews().filter((r: any) => r.attemptId === draft.attemptId)) : null;
   if (draft.submitted) return <>
     <SlimBar title={exercise.title} meta={`Lens Review, ${exercise.topic.replace(' & ', ' and ').toLowerCase()}, submitted`} onExit={onHome} help={help} leave={null} aside={<ResultChip value={result.total / 10}>{scoreText(result.total)}</ResultChip>}/>
     <WorkArea>
@@ -154,6 +163,7 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
         {tabs}
         <div className="work-side-body">
           {tab === 'feedback' ? <LensResult exercise={exercise} comments={draft.comments} result={result} noIssues={draft.noIssues} justification={draft.justification} focus={focus}
+            taScore={ta?.adjustedScore} ta={ta?.sent.length ? <TaNote comments={ta.comments}/> : undefined}
             rating={<AnswerFeedback target="AI feedback" value={draft.ratings?.feedback} onChange={rating => update({ ...draft, ratings: { ...draft.ratings, feedback: rating } })}/>}/>
             : tab === 'guide' ? guide : <section className="lr-saved">{draft.noIssues ? <article className="saved-note"><div className="note-head"><span className="lens-tag">No issues found</span></div><p>{draft.justification}</p></article> : saved}</section>}
         </div>
@@ -180,11 +190,10 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
           {tab === 'annotations' ? <>
             {range.length > 0 && <form className="lr-form panel-in" onSubmit={saveComment}>
               <div className="row-between"><h2 className="panel-title">{editing ? 'Edit annotation' : 'New annotation'}</h2><span className="lines">{linesLabel(lo, hi)}</span></div>
-              <fieldset className="lens-pick"><legend>Which lens fails here?</legend><div>
-                {allowedFocus.map(d => <button type="button" key={d} className="chip-toggle" aria-pressed={form.dimension === d} onClick={() => setForm({ ...form, dimension: d })}>{form.dimension === d && <CheckIcon/>}{d}</button>)}
+              <fieldset className="lens-pick"><legend>{multiLens ? 'Which lenses fail here? Choose one or more.' : 'Which lens fails here?'}</legend><div>
+                {allowedFocus.map(d => { const on = form.lenses.includes(d); return <button type="button" key={d} className="chip-toggle" aria-pressed={on} onClick={() => { setError(''); setForm({ ...form, lenses: multiLens ? (on ? form.lenses.filter(l => l !== d) : [...form.lenses, d]) : [d] }); }}>{on && <CheckIcon/>}{d}</button>; })}
               </div></fieldset>
-              <label className="field">Claim<textarea rows={2} placeholder="What is the issue with this code?" value={form.claim} onChange={e => setForm({ ...form, claim: e.target.value })}/></label>
-              <label className="field">Reasoning<textarea rows={2} placeholder="Why does it matter? Use an example or explain the complexity." value={form.reasoning} onChange={e => setForm({ ...form, reasoning: e.target.value })}/></label>
+              <label className="field">What’s wrong, and why?<textarea rows={4} placeholder="Describe the problem and why it matters." value={form.text} onChange={e => setForm({ ...form, text: e.target.value })}/></label>
               <label className="field">Proposed fix<textarea rows={2} placeholder="How would you change the code?" value={form.fix} onChange={e => setForm({ ...form, fix: e.target.value })}/></label>
               {error && <p className="error-text" role="alert">{error}</p>}
               <div className="lr-form-actions"><button type="button" className="btn btn-outline btn-sm" onClick={clearEditor}>Cancel</button><button type="submit" className="btn btn-primary btn-sm">{editing ? 'Save changes' : 'Save annotation'}</button></div>
@@ -207,7 +216,7 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
   </>;
 }
 
-function Brief({ exercise }: { exercise: any }) {
+export function Brief({ exercise }: { exercise: any }) {
   return <>
     <h2 className="work-prompt">Check the proposed code against the requirements.</h2>
     <div className="lr-brief">

@@ -70,7 +70,7 @@ function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; 
   const has = (id: string) => id === 'lens-review' || features.some(f => f.id === id);
   const screenProps = { params: route.params, go, has };
   // Exercises draw their own slim bar; every other screen sits on a sheet under the top bar.
-  if (feature && feature.kind === 'practice') return <div className="app-frame exercise"><feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/></div>;
+  if (feature && (feature.kind === 'practice' || feature.bare)) return <div className="app-frame exercise"><feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/></div>;
   return <div className="app-frame">
     <TopBar role={role} routeId={route.id} go={go} onRole={onRole}/>
     <main className="sheet page"><div className="page-inner">

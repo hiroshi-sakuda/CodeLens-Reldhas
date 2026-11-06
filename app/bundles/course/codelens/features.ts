@@ -19,6 +19,7 @@ export type Feature = {
   navIcon?: ComponentType<{ size?: number }>;
   badge?: () => number;
   notifications?: () => Note[];
+  bare?: boolean; // draws its own slim bar, like an exercise
 };
 const found = import.meta.glob('./features/*/index.tsx', { eager: true }) as Record<string, { default: Feature }>;
 export const features = Object.values(found).map(m => m.default).sort((a, b) => a.order - b.order);

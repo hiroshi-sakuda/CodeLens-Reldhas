@@ -22,7 +22,7 @@
   --amber:#f0a23a;--amber-bg:#fdf1de;--amber-text:#7a4300;--amber-strong:#8a4b00;--amber-edge:#f0d7ad;--amber-box:#fffaf2;--amber-line:#b36b00;
   --good-bg:#e9f7d3;--good-text:#2b4f10;--good-edge:#cfe6b4;--good-box:#f4faea;
   --bad-bg:#fde8e1;--bad-text:#9a2f0c;--signal:#c8411f;--on-signal:#ffffff;
-  --input-bg:#ffffff;--input-line:#c9d1cd;--placeholder:#6b7672;
+  --input-bg:#ffffff;--input-line:#c9d1cd;--ta-bg:#1b2421;--ta-text:#e8edea;--placeholder:#6b7672;
   --syntax-keyword:#8a2bb0;--syntax-number:#a35200;--syntax-string:#2a7a3a;--syntax-comment:#6b7672;
   --shadow-pop:0 1px 2px rgba(27,36,33,.06),0 16px 40px -8px rgba(27,36,33,.22);
   --backdrop:rgba(27,36,33,.35);
@@ -40,7 +40,7 @@
   --amber:#f0a23a;--amber-bg:#4a3519;--amber-text:#ffe2b3;--amber-strong:#f5b962;--amber-edge:#7a5a28;--amber-box:#2b2216;--amber-line:#f5b962;
   --good-bg:#2a3a1f;--good-text:#cfe8b0;--good-edge:#3d5226;--good-box:#1b2417;
   --bad-bg:#43211a;--bad-text:#ffb4a0;--signal:#e2603c;--on-signal:#1a0802;
-  --input-bg:#101514;--input-line:#323b38;--placeholder:#7d8984;
+  --input-bg:#101514;--input-line:#323b38;--ta-bg:#26311d;--ta-text:#e8edea;--placeholder:#7d8984;
   --syntax-keyword:#d4a6e6;--syntax-number:#f5b962;--syntax-string:#a8d48a;--syntax-comment:#8a9691;
   --shadow-pop:0 1px 2px rgba(0,0,0,.4),0 16px 40px -8px rgba(0,0,0,.6);
   --backdrop:rgba(0,0,0,.55);

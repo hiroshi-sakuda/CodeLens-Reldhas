@@ -3,7 +3,7 @@ import { lensReviewData, readTa } from '../../practice-log.js';
 export const demoStudent = 'Demo student';
 // Made-up students. Scores come from the same assess() as real submissions.
 const hoursAgo = hours => new Date(Date.now() - hours * 3600000).toISOString();
-const comment = (dimension, start, end, claim, reasoning, fix) => ({ id: `${dimension}-${start}-${claim.length}`, dimension, start, end, claim, reasoning, fix });
+const comment = (lens, start, end, claim, reasoning, fix) => ({ id: `${lens}-${start}-${claim.length}`, lenses: [lens], start, end, text: `${claim} ${reasoning}`, fix });
 const sample = (id, student, exercise, hours, comments, extra = {}) => {
   const noIssues = !!extra.noIssues;
   const result = assess(exercises.find(e => e.id === exercise), comments, { noIssues, justification: extra.justification || '' });

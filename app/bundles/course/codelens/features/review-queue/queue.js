@@ -1,3 +1,4 @@
+import { normalizeComment } from '../../model.js';
 export const flagLabels = { 'low-confidence': 'Low AI confidence', 'student-down': 'Student 👎', watching: 'Watching' };
 export const statusLabels = { waiting: 'Waiting', sent: 'Sent', skipped: 'Skipped' };
 // Sent wins over skipped: once anything was sent, the student has TA feedback.
@@ -7,12 +8,12 @@ export function statusOf(reviews) {
   return 'waiting';
 }
 const overlaps = (comment, finding) => comment.start <= finding.end && comment.end >= finding.start;
-const hasKeyword = (comment, finding) => finding.keywords.some(k => comment.claim.toLowerCase().includes(k));
-const words = comment => `${comment.claim} ${comment.reasoning}`.trim().split(/\s+/).length;
+const hasKeyword = (comment, finding) => finding.keywords.some(k => comment.text.toLowerCase().includes(k));
+const words = comment => comment.text.trim().split(/\s+/).length;
 // Low when a comment is on the right lines but says something else, speaks to two
 // issues, or is a long comment off the answer key (it may be a valid extra point).
 export function confidenceOf(exercise, comments) {
-  const low = comments.some(comment => {
+  const low = comments.map(normalizeComment).some(comment => {
     const hit = exercise.findings.filter(f => overlaps(comment, f));
     const matched = hit.filter(f => hasKeyword(comment, f));
     return matched.length > 1 || (hit.length > 0 && matched.length === 0) || (hit.length === 0 && words(comment) > 25);

@@ -7,7 +7,7 @@ import { commonGaps, computeInsights, feedbackQuality } from '../app/bundles/cou
 import { sampleClass, sampleVotes } from '../app/bundles/course/codelens/features/class-insights/sample-class.js';
 import { approvedCounts, nextSamples, regenerate, seedStatuses, validRequired } from '../app/bundles/course/codelens/features/content-studio/studio.js';
 const seats = exercises.find(e => e.id === 'seats');
-const good = { id: 'c', dimension: 'Efficiency', start: 6, end: 9, claim: 'The nested loop scans it', reasoning: 'Slow', fix: 'Set' };
+const good = { id: 'c', lenses: ['Efficiency'], start: 6, end: 9, text: 'The nested loop scans it. Slow', fix: 'Set' };
 const sub = (id, date, extra = {}) => ({ id, student: id, exercise: 'seats', date, comments: [good], ...extra });
 test('sent wins over skipped',()=>{
   assert.equal(statusOf([{action:'skipped'},{sentAt:'x'}]),'sent');
@@ -16,11 +16,11 @@ test('sent wins over skipped',()=>{
 });
 test('confidence is low for a comment that misses the point or a long off-key one',()=>{
   assert.equal(confidenceOf(seats,[good]),'high');
-  assert.equal(confidenceOf(seats,[{...good,claim:'Odd style here'}]),'low');
+  assert.equal(confidenceOf(seats,[{...good,text:'Odd style here'}]),'low');
   const discount=exercises.find(e=>e.id==='discount');
-  assert.equal(confidenceOf(discount,[{...good,start:3,end:3,claim:'The 100 boundary is wrong'}]),'high');
-  assert.equal(confidenceOf(discount,[{...good,start:3,end:3,claim:'The 100 boundary and negative totals'}]),'low');
-  assert.equal(confidenceOf(seats,[{...good,start:1,end:1,claim:'word '.repeat(30)}]),'low');
+  assert.equal(confidenceOf(discount,[{...good,start:3,end:3,text:'The 100 boundary is wrong'}]),'high');
+  assert.equal(confidenceOf(discount,[{...good,start:3,end:3,text:'The 100 boundary and negative totals'}]),'low');
+  assert.equal(confidenceOf(seats,[{...good,start:1,end:1,text:'word '.repeat(30)}]),'low');
 });
 test('queue order: waiting, more flags, then newest',()=>{
   const q=buildQueue([sub('old','2026-01-01'),sub('new','2026-02-01'),sub('flag','2026-01-02',{studentVote:'down'}),sub('done','2026-03-01')],[{attemptId:'done',sentAt:'x',createdAt:'x'}],[],exercises);

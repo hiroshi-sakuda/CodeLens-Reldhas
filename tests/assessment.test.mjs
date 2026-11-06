@@ -1,13 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assess, exercises } from '../app/bundles/course/codelens/model.js';
-const good = {dimension:'Efficiency',start:6,end:9,claim:'The nested loop scans every booked seat.',reasoning:'Every request scans the list, taking O(r*b) time instead of a constant time membership lookup.',fix:'Build a set before the loop.'};
+import { assess, exercises, normalizeComment } from '../app/bundles/course/codelens/model.js';
+const good = {lenses:['Efficiency'],start:6,end:9,text:'The nested loop scans every booked seat. Every request scans the list, taking O(r*b) time instead of a constant time membership lookup.',fix:'Build a set before the loop.'};
 test('empty review earns no credit',()=>assert.equal(assess(exercises[0],[]).total,0));
 test('supported review receives four rubric credits',()=>assert.equal(assess(exercises[0],[good]).total,10));
-test('unrelated evidence loses evidence credit',()=>assert.equal(assess(exercises[0],[{...good,start:12,end:13}]).rubric.evidence,0));
+test('unrelated evidence loses evidence credit',()=>assert.equal(assess(exercises[0],[{...good,start:12,end:13}]).rubric.lines,0));
 test('duplicate claims cannot inflate score',()=>assert.equal(assess(exercises[0],[good,good]).total,10));
-test('wrong focus does not receive claim credit',()=>assert.equal(assess(exercises[0],[{...good,dimension:'Correctness'}]).total,0));
-test('finding only one of two issues cannot earn full marks',()=>assert.equal(assess(exercises[1],[{...good,dimension:'Correctness',start:3,end:3,claim:'The 100 boundary is excluded',fix:'Use >= for inclusive comparison'}]).total,5));
+test('wrong focus does not receive claim credit',()=>assert.equal(assess(exercises[0],[{...good,lenses:['Correctness']}]).total,0));
+test('several lenses: each wrong extra lens lowers the issue credit',()=>{
+  assert.equal(assess(exercises[0],[{...good,lenses:['Efficiency','Correctness']}]).rubric.issue,1.25);
+  assert.ok(assess(exercises[0],[{...good,lenses:['Correctness','Appropriateness','Efficiency','Maintainability']}]).total<10);
+});
+test('one lens that is right for two issues on the same lines keeps full credit',()=>{
+  const discount=exercises.find(e=>e.id==='discount');
+  const both={lenses:['Correctness'],start:1,end:5,text:'A total of exactly 100 misses the boundary, and a negative total is accepted without validation.',fix:'Use >= and raise ValueError when total < 0.'};
+  assert.equal(assess(discount,[both]).total,10);
+});
+test('naming the issue without saying why loses only the explanation credit',()=>{
+  const r=assess(exercises[0],[{...good,text:'The nested loop scans the list.'}]);
+  assert.equal(r.rubric.explanation,0);assert.equal(r.total,7.5);
+});
+test('older annotations with a separate claim and reasoning are graded the same way',()=>{
+  const old={dimension:'Efficiency',start:6,end:9,claim:'The nested loop scans every booked seat.',reasoning:'Every request scans the list, taking O(r*b) time instead of a constant time membership lookup.',fix:'Build a set before the loop.'};
+  assert.deepEqual(normalizeComment(old).lenses,['Efficiency']);
+  assert.equal(assess(exercises[0],[old]).total,10);
+});
+test('finding only one of two issues cannot earn full marks',()=>assert.equal(assess(exercises[1],[{...good,lenses:['Correctness'],start:3,end:3,text:'The 100 boundary is excluded, so a basket of exactly 100 dollars gets no discount at all.',fix:'Use >= for inclusive comparison'}]).total,5));
 import { choosePractice, eligibleExercises, submissionError } from '../app/bundles/course/codelens/review-flow.js';
 test('focus selection excludes questions with issues outside chosen areas',()=>{
   assert.deepEqual(eligibleExercises('Random',['Efficiency']).filter(e=>e.findings.length).map(e=>e.id),['seats']);

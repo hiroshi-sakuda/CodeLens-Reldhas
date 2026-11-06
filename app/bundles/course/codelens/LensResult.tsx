@@ -20,9 +20,17 @@ export function ResultCode({ exercise, comments }: { exercise: any; comments: an
     legend={exercise.findings.length ? <span className="legend"><span><i className="found"/>You found</span><span><i className="missed"/>You missed</span></span> : <span>No planted issues in this code</span>} note={null}/>;
 }
 
-export default function LensResult({ exercise, comments, result, noIssues, justification, focus, ta, rating }: {
+/* The TA's own feedback, shown above the AI's. The bell opens the review here (id ta-comment). */
+export function TaNote({ comments, highlight = false }: { comments: string[]; highlight?: boolean }) {
+  return <section id="ta-comment" tabIndex={-1} aria-labelledby="ta-title" className={'ta-note' + (highlight ? ' flash' : '')}>
+    <span className="ta-avatar" aria-hidden="true">TA</span>
+    <div><h2 id="ta-title">Your TA</h2>{comments.length ? comments.map((c, i) => <p key={i}>{c}</p>) : <p>Your TA checked this review and agreed with the AI feedback.</p>}</div>
+  </section>;
+}
+
+export default function LensResult({ exercise, comments, result, noIssues, justification, focus, ta, taScore, rating }: {
   exercise: any; comments: any[]; result: any; noIssues?: boolean; justification?: string; focus: string[];
-  ta?: ReactNode; rating?: ReactNode;
+  ta?: ReactNode; taScore?: number | null; rating?: ReactNode;
 }) {
   const found = exercise.findings.filter((f: any) => findingFound(f, comments)).length;
   const extra = comments.map(c => commentFeedback(exercise, c)).filter(f => f.result !== 'found');
@@ -32,12 +40,15 @@ export default function LensResult({ exercise, comments, result, noIssues, justi
     : found === exercise.findings.length ? 'You found every planted issue.' : found ? `You found ${found} of ${exercise.findings.length} issues. Check the one you missed below.` : 'You missed the planted issues. Each one is explained below.';
   return <>
     <div className="score-head">
-      <div className="big-score"><strong>{+result.total.toFixed(1)}</strong><span>/ 10</span></div>
+      <div className="score-pair">
+        <div className="big-score"><strong>{+result.total.toFixed(1)}</strong><span>/ 10</span>{taScore != null && <small>AI</small>}</div>
+        {taScore != null && <div className="big-score ta"><strong>{+taScore.toFixed(1)}</strong><span>/ 10</span><small>Your TA</small></div>}
+      </div>
       <div className="score-sub"><strong>{clean ? (noIssues ? 'Right conclusion' : 'No issues to find') : `Found ${found} of ${exercise.findings.length} ${exercise.findings.length === 1 ? 'issue' : 'issues'}`}</strong><span>Lens tested: {focus.join(', ')}</span></div>
     </div>
     {ta}
     <section aria-labelledby="ai-title" className="feedback-block">
-      <div className="ai-title"><SparkIcon/><h2 id="ai-title" className="panel-title">AI feedback</h2><span className="chip">Simulated</span></div>
+      <div className="ai-title"><SparkIcon/><h2 id="ai-title" className="panel-title">AI feedback</h2><span className="chip">{ta ? 'Checked by your TA' : 'Simulated'}</span></div>
       <p>{summary}</p>
       {noIssues && <article className={'note-box ' + (clean ? 'good' : 'warn')}><div className="note-head"><span className={'chip ' + (clean ? 'good' : 'warn')}>{clean ? <CheckIcon/> : <X size={14} strokeWidth={2.6}/>}No issues found</span></div><p>{justification}</p></article>}
       {exercise.findings.map((f: any, i: number) => {

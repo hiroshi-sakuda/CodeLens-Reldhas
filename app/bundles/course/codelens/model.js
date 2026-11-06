@@ -12,8 +12,28 @@ export function consoleExample(exercise) {
     : 'print(discounted_total(100))';
 }
 
+// An annotation: the lines, one or more lenses, "What's wrong, and why?" (text) and a proposed fix.
+// Older saved annotations had one lens (dimension) and a separate claim and reasoning; read them the same way.
+export function normalizeComment(c) {
+  const lenses = c.lenses?.length ? c.lenses : c.dimension ? [c.dimension] : [];
+  const text = c.text ?? [c.claim, c.reasoning].filter(s => s && s.trim()).map(s => s.trim()).join(' ');
+  return { ...c, lenses, text, fix: c.fix || '' };
+}
+const overlaps = (c, f) => c.start <= f.end && c.end >= f.start;
+const words = text => text.trim().split(/\s+/).filter(Boolean).length;
+// "Why" is answered when the text goes beyond naming the issue: at least this many words.
+export const explainWords = 12;
+export const namesIssue = (c, f) => c.lenses.includes(f.dimension) && f.keywords.some(k => c.text.toLowerCase().includes(k));
+// Share of the chosen lenses that really apply to these lines. Ticking every lens can't earn full credit.
+export function lensPrecision(exercise, c) {
+  const here = new Set(exercise.findings.filter(f => overlaps(c, f)).map(f => f.dimension));
+  return c.lenses.length ? c.lenses.filter(l => here.has(l)).length / c.lenses.length : 0;
+}
+
 // Transparent demo heuristic, not AI assessment or semantic validation.
-export function assess(exercise, comments, conclusion = { noIssues: false, justification: '' }) {
+// Four criteria per planted issue, 2.5 each: issue (named, with the right lens), lines, explanation (why), fix.
+export function assess(exercise, rawComments, conclusion = { noIssues: false, justification: '' }) {
+  const comments = rawComments.map(normalizeComment);
   if (!exercise.findings.length || conclusion.noIssues) {
     const correct = exercise.findings.length === 0 && conclusion.noIssues
       && comments.length === 0 && Boolean(conclusion.justification?.trim());
@@ -21,21 +41,21 @@ export function assess(exercise, comments, conclusion = { noIssues: false, justi
     // pretending the four critique criteria were evaluated.
     return { rubric: {}, total: correct ? 10 : 0, found: 0, conclusionCorrect: correct };
   }
+  const keys = ['issue', 'lines', 'explanation', 'fix'];
   const matches = exercise.findings.map(f => {
-    let best = { claim: 0, evidence: 0, reasoning: 0, fix: 0 };
+    let best = { issue: 0, lines: 0, explanation: 0, fix: 0 };
     for (const c of comments) {
-      const text = c.claim.toLowerCase();
-      const relevant = c.dimension === f.dimension && f.keywords.some(k => text.includes(k));
-      const score = { claim: relevant ? 2.5 : 0, evidence: relevant && c.start <= f.end && c.end >= f.start ? 2.5 : 0, reasoning: relevant && c.reasoning.trim().length >= 30 ? 2.5 : 0, fix: relevant && f.fixes.some(k => c.fix.toLowerCase().includes(k)) ? 2.5 : 0 };
-      if (Object.values(score).reduce((a,b)=>a+b,0) > Object.values(best).reduce((a,b)=>a+b,0)) best = score;
+      const relevant = namesIssue(c, f);
+      const score = { issue: relevant ? 2.5 * Math.max(lensPrecision(exercise, c), overlaps(c, f) ? 0 : 1 / c.lenses.length) : 0, lines: relevant && overlaps(c, f) ? 2.5 : 0, explanation: relevant && words(c.text) >= explainWords ? 2.5 : 0, fix: relevant && f.fixes.some(k => c.fix.toLowerCase().includes(k)) ? 2.5 : 0 };
+      if (keys.reduce((s, k) => s + score[k], 0) > keys.reduce((s, k) => s + best[k], 0)) best = score;
     }
     return best;
   });
-  const rubric = Object.fromEntries(['claim','evidence','reasoning','fix'].map(k => [k, matches.reduce((s,m)=>s+m[k],0)/matches.length]));
-  return { rubric, total: Object.values(rubric).reduce((a,b)=>a+b,0), found: matches.filter(m=>m.claim>0).length };
+  const rubric = Object.fromEntries(keys.map(k => [k, matches.reduce((s, m) => s + m[k], 0) / matches.length]));
+  return { rubric, total: Object.values(rubric).reduce((a, b) => a + b, 0), found: matches.filter(m => m.issue > 0).length };
 }
 
 // Which planted issues a review found: the same test as assess() (the right lens and an issue keyword).
 export function findingFound(finding, comments) {
-  return comments.some(c => c.dimension === finding.dimension && finding.keywords.some(k => c.claim.toLowerCase().includes(k)));
+  return comments.map(normalizeComment).some(c => namesIssue(c, finding));
 }

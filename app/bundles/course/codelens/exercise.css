@@ -51,7 +51,7 @@
 .code-row.found .ln,.code-row.missed .ln{font-weight:600;color:inherit}
 .legend{display:inline-flex;flex-wrap:wrap;gap:14px}
 .legend>span{display:inline-flex;align-items:center;gap:6px}
-.legend i{width:12px;height:12px;border-radius:4px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px}
 .legend i.found{background:var(--good-bg);box-shadow:inset 0 0 0 1.5px var(--good-text)}
 .legend i.missed{background:var(--amber-bg);box-shadow:inset 0 0 0 1.5px var(--amber-line)}
 .syntax-keyword{color:var(--syntax-keyword)}.syntax-number{color:var(--syntax-number)}.syntax-string{color:var(--syntax-string)}
@@ -129,3 +129,16 @@
 
 
 @media(max-width:700px){.work-main,.work-side-body{padding:16px}.work-prompt{font-size:19px}.code-lines{font-size:13px}}
+
+/* The TA's own feedback: an ink block in light, tinted sage in dark. */
+.ta-note{display:flex;gap:12px;padding:16px;border-radius:var(--r-card);background:var(--ta-bg);color:var(--ta-text);box-shadow:inset 0 0 0 1px var(--chip-edge);scroll-margin:90px}
+.ta-note h2{margin:0 0 2px;font-family:var(--font-ui);font-size:14px;font-weight:600;letter-spacing:0;color:var(--chip-text)}
+.ta-note p{margin:0}.ta-note p+p{margin-top:6px}
+.ta-note:focus{outline:none}
+.ta-note:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.ta-avatar{flex:0 0 36px;height:36px;border-radius:18px;background:var(--action);color:var(--on-action);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+.ta-note.flash{animation:ta-flash 900ms var(--ease) 200ms both}
+@keyframes ta-flash{0%{box-shadow:0 0 0 0 var(--action-ring),inset 0 0 0 1px var(--chip-edge)}40%{box-shadow:0 0 0 8px var(--action-ring),inset 0 0 0 1px var(--chip-edge)}100%{box-shadow:0 0 0 0 transparent,inset 0 0 0 1px var(--chip-edge)}}
+.score-pair{display:flex;align-items:flex-end;gap:22px}
+.big-score small{align-self:flex-end;margin-left:4px;font-size:12.5px;font-weight:600;color:var(--ink-faint)}
+.big-score.ta{padding-left:22px;border-left:1px solid var(--line)}

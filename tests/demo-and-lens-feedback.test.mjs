@@ -7,24 +7,28 @@ import { demoAnswer, questionFeedback } from '../app/bundles/course/codelens/fea
 import { questions as conceptQuestions } from '../app/bundles/course/codelens/features/concept-match/questions.js';
 import { questions as dryQuestions } from '../app/bundles/course/codelens/features/dry-run/questions.js';
 const seats = exercises.find(e => e.id === 'seats');
-const good = { id: 'c', dimension: 'Efficiency', start: 6, end: 9, claim: 'The nested loop scans every booked seat.', reasoning: 'Every request scans the list, taking O(r*b) time.', fix: 'Build a set before the loop.' };
+const good = { id: 'c', lenses: ['Efficiency'], start: 6, end: 9, text: 'The nested loop scans every booked seat. Every request scans the list, taking O(r*b) time.', fix: 'Build a set before the loop.' };
 const conclude = (exercise, review) => assess(exercise, review.comments, { noIssues: review.noIssues, justification: review.justification });
 
-test('a found issue gets one point each on claim, lines, reasoning and fix',()=>{
+test('a found issue gets one point each on the issue, lines, why and fix',()=>{
   const f=commentFeedback(seats,good);
   assert.equal(f.result,'found');assert.equal(f.points.length,4);
   assert.ok(f.points[0].includes('nested loop scans'));
 });
 test('a weak fix and short reasoning are asked about as questions',()=>{
-  const f=commentFeedback(seats,{...good,reasoning:'Slow.',fix:'Change it.'});
+  const f=commentFeedback(seats,{...good,text:'The nested loop scans it.',fix:'Change it.'});
   assert.ok(f.points[2].endsWith('?')||f.points[2].endsWith('.'));
   assert.ok(f.points[3].startsWith('How would you change'));
 });
 test('wrong lines, wrong lens, unnamed issues and non-issues are told apart',()=>{
   assert.equal(commentFeedback(seats,{...good,start:1,end:1}).result,'found');
-  assert.equal(commentFeedback(seats,{...good,dimension:'Correctness'}).result,'wrong-lens');
-  assert.equal(commentFeedback(seats,{...good,claim:'Odd style here'}).result,'unclear');
-  assert.equal(commentFeedback(seats,{...good,dimension:'Correctness',claim:'x',start:12,end:13}).result,'not-an-issue');
+  assert.equal(commentFeedback(seats,{...good,lenses:['Correctness']}).result,'wrong-lens');
+  assert.equal(commentFeedback(seats,{...good,text:'Odd style here'}).result,'unclear');
+  assert.equal(commentFeedback(seats,{...good,lenses:['Correctness'],text:'x',start:12,end:13}).result,'not-an-issue');
+});
+test('an extra lens that does not apply is asked about',()=>{
+  const f=commentFeedback(seats,{...good,lenses:['Efficiency','Maintainability']});
+  assert.equal(f.result,'found');assert.ok(f.points.at(-1).includes('Maintainability'));assert.equal(f.label,'Efficiency + Maintainability · L6–9');
 });
 test('the good demo review scores 10 on every Lens Review exercise',()=>{
   for(const e of exercises) assert.equal(conclude(e,goodReview(e)).total,10,e.id);
