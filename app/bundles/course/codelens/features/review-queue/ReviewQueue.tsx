@@ -4,12 +4,13 @@ import { highlight } from '../../CodeBlock';
 import type { ScreenProps } from '../../features';
 import { SparkIcon } from '../../icons';
 import { scoreText } from '../../LensResult';
-import { exercises, normalizeComment } from '../../model.js';
+import { exercises, findingFound, normalizeComment } from '../../model.js';
 import { readTa, writeTa } from '../../practice-log.js';
 import { ThemeButton } from '../../bars';
 import { PanelFooter, ResultChip, WorkArea } from '../../ui';
 import { aiSummary, buildQueue, confidenceOf, flagLabels, makeReview, queueCounts, statusLabels } from './queue.js';
-import { allReviews, allSubmissions } from './submissions.js';
+import { allReviews, allSubmissions, exampleTaFeedback } from './submissions.js';
+import DemoFill from '../../DemoFill';
 import './review-queue.css';
 export const loadQueue = () => buildQueue(allSubmissions(), allReviews(), exercises) as any[];
 const when = (iso: string) => new Date(iso).toLocaleString([], { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
@@ -130,6 +131,7 @@ export function TaReview({ params, go }: ScreenProps) {
               <span className="score-input"><input type="number" min={0} max={10} step={0.5} value={score} placeholder="–" onChange={e => { setScore(e.target.value); setError(''); }}/><span>/ 10</span></span>
             </label>
             {error && <p className="error-text" role="alert">{error}</p>}
+            <DemoFill goodLabel="Fill example feedback" onGood={() => setComment(exampleFeedback(s, exercise, name))}/>
           </section>
         </div>
         <PanelFooter note={`${name} gets the AI feedback and yours.`}>
@@ -152,4 +154,13 @@ function framedCode(code: string[], comments: any[]) {
   }
   out.push(...rows.slice(at - 1));
   return out;
+}
+
+// Demo shortcut only (?demo): feedback a TA might write, so a presenter doesn't have to type.
+function exampleFeedback(s: any, exercise: any, name: string) {
+  if ((exampleTaFeedback as any)[s.id]) return (exampleTaFeedback as any)[s.id];
+  const missed = exercise.findings.find((f: any) => !findingFound(f, s.comments));
+  if (!exercise.findings.length) return s.noIssues ? `Right call, ${name}: the code meets every requirement. Next time, list the inputs you tried.` : `This code has no issues, ${name}. Before annotating, try your idea in the terminal to check it.`;
+  if (missed) return `Good start, ${name}. You missed one: ${missed.claim} Check each requirement against a line of code before you submit.`;
+  return `Well done, ${name}: you found every issue. Next time, add an example input that shows each bug.`;
 }

@@ -21,7 +21,7 @@ export const functionIcons: Record<string, ComponentType<{ size?: number }>> = {
 /* One list of results, used on Practice (latest four) and in full on the Skill map. */
 export function ResultsList({ items, go, has }: { items: any[]; go: Go; has: (id: string) => boolean }) {
   const sent = new Set(readTa().reviews.filter((r: any) => r.sentAt).map((r: any) => r.attemptId));
-  const open = (s: any) => s.function === 'lens-review' ? (has('ta-feedback') ? go('ta-feedback', { attemptId: s.id }) : go('lens-review', { setup: true })) : go(s.function, { attemptId: s.id });
+  const open = (s: any) => s.submissionId ? go('ta-feedback', { attemptId: s.submissionId }) : s.function === 'lens-review' ? (has('ta-feedback') ? go('ta-feedback', { attemptId: s.id }) : go('lens-review', { setup: true })) : go(s.function, { attemptId: s.id });
   return <ul className="results">{items.map(s => {
     const Icon = functionIcons[s.function];
     const body = <>
@@ -29,7 +29,7 @@ export function ResultsList({ items, go, has }: { items: any[]; go: Go; has: (id
       <span className="result-text"><strong>{s.title}</strong><span>{(functionNames as any)[s.function]}, {shortDate(s.date)}{(s.taComment || sent.has(s.id)) && <span className="chip strong">TA commented</span>}</span></span>
       <ResultChip value={s.score} soft={s.function !== 'lens-review'}>{s.shown}</ResultChip>
     </>;
-    return <li key={s.id}>{s.real ? <button className="result-row row-hover" onClick={() => open(s)}>{body}</button> : <div className="result-row" title="Sample history">{body}</div>}</li>;
+    return <li key={s.id}>{s.real || s.submissionId ? <button className="result-row row-hover" onClick={() => open(s)}>{body}</button> : <div className="result-row" title="Sample history">{body}</div>}</li>;
   })}</ul>;
 }
 

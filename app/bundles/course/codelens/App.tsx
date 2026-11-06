@@ -24,7 +24,7 @@ const empty = { text: '', fix: '', lenses: [] as string[] };
 const freshForm = (lenses: string[]) => ({ ...empty, lenses: lenses.length === 1 ? [...lenses] : [] });
 // Saved drafts from before the merge had claim, reasoning and one lens; turn them into the new form.
 const toForm = (saved: any) => { if (!saved) return null; const c = normalizeComment(saved); return { text: c.text, fix: c.fix, lenses: c.lenses }; };
-export const help = { title: 'How Lens Review works', steps: ['Read the situation and compare the code with the requirements.', 'Click a line number, or drag across lines, to select an issue.', 'Choose the lenses that fail, say what is wrong and why, and propose a fix.', 'Nothing to flag? Tick “I found no issues” and say what you checked.', 'Submit to see your score and feedback on each annotation.'] };
+export const help = { title: 'How Lens Review works', steps: ['Read the situation and compare the code with the requirements.', 'Click a line, or drag across several lines, to select an issue.', 'Choose the lenses that fail, say what is wrong and why, and propose a fix.', 'Nothing to flag? Tick “I found no issues” and say what you checked.', 'Submit to see your score and feedback on each annotation.'] };
 function readSaved() { try { const s = JSON.parse(localStorage.getItem('codelens-demo-v1') || '{}'); return { drafts: s.drafts || {}, attempts: Array.isArray(s.attempts) ? s.attempts : [], currentReviewId: s.currentReviewId || Object.keys(s.drafts || {})[0] || 'seats' }; } catch { return { drafts: {}, attempts: [], currentReviewId: 'seats' }; } }
 const linesLabel = (a: number, b: number) => a === b ? `Line ${a}` : `Lines ${a}–${b}`;
 
@@ -115,7 +115,8 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
   function dragOver(e: React.MouseEvent) {
     if (dragFrom.current === null) return;
     const n = Number((e.target as HTMLElement).closest('[data-line]')?.getAttribute('data-line'));
-    if (n) setRange(r => r[0] === dragFrom.current && r.at(-1) === n ? r : [dragFrom.current!, n]);
+    const from = dragFrom.current;
+    if (n) setRange(r => r[0] === from && r.at(-1) === n ? r : [from, n]);
   }
 
   if (showSetup) return <>
@@ -127,9 +128,10 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
   const rows = exercise.code.map((line, i) => {
     const n = i + 1;
     const annotated = draft.comments.some(c => n >= c.start && n <= c.end);
-    return <div key={n} data-line={n} className={'lr-line' + (annotated ? ' annotated' : '') + (n >= lo && n <= hi ? ' selected' : '')}>
-      <button type="button" className="lr-ln" disabled={draft.submitted || draft.noIssues} aria-label={`Select line ${n}`} aria-pressed={n >= lo && n <= hi}
-        onMouseDown={e => { if (e.button === 0) pickLine(n, e); }} onClick={e => { if (e.detail === 0) pickLine(n, e); }}>{n}</button>
+    // Press anywhere on a line (number or code) to start; drag to extend. The number button serves the keyboard.
+    return <div key={n} data-line={n} className={'lr-line' + (annotated ? ' annotated' : '') + (n >= lo && n <= hi ? ' selected' : '') + (draft.submitted || draft.noIssues ? '' : ' pickable')}
+      onMouseDown={e => { if (e.button === 0) { e.preventDefault(); pickLine(n, e); } }}>
+      <button type="button" className="lr-ln" disabled={draft.submitted || draft.noIssues} aria-label={`Select line ${n}`} aria-pressed={n >= lo && n <= hi} onClick={e => { if (e.detail === 0) pickLine(n, e); }}>{n}</button>
       <code>{highlight(line) || ' '}</code>
     </div>;
   });
@@ -179,7 +181,7 @@ export default function App({ onHome, params = {} }: { onHome: () => void; param
       <section className="sheet work-main" aria-label="Exercise and code">
         <Brief exercise={exercise}/>
         <div className="code-card">
-          <div className="code-card-head"><span className="lr-instruction"><span className="lr-icon" aria-hidden="true"><LensIcon size={15}/></span>{draft.noIssues ? 'You marked this code as having no issues.' : 'Click a line number, or drag across lines, to add an annotation.'}</span><span className="mono muted-mono">{exercise.file}</span></div>
+          <div className="code-card-head"><span className="lr-instruction"><span className="lr-icon" aria-hidden="true"><LensIcon size={15}/></span>{draft.noIssues ? 'You marked this code as having no issues.' : 'Click a line, or drag across several lines, to add an annotation.'}</span><span className="mono muted-mono">{exercise.file}</span></div>
           <div className="code-lines lr-code" aria-label="Python source code" onMouseMove={dragOver} onMouseUp={dragOver}>{code}</div>
           <details className="lr-terminal"><summary><TerminalIcon size={16}/>Terminal<span>Run the code to test your ideas</span></summary><PythonConsole key={reviewId} source={exercise.code.join('\n')} example={consoleExample(exercise)}/></details>
         </div>

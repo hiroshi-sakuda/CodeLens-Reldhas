@@ -60,7 +60,7 @@ export default function StudentHome({ go, has }: ScreenProps) {
     <div className="practice-grid">{cards.map((c, i) => {
       const isSuggested = suggested === c.id;
       const open = isUnlocked(c.id, course);
-      return <article key={c.id} className={'card hoverable vf practice-card2' + (isSuggested ? ' on suggested' : '')}>
+      return <article key={c.id} className={'card hoverable vf practice-card2' + (isSuggested ? ' suggested' : '')}>
         <Brackets/>
         <div className="practice-card-top"><span className="tile" aria-hidden="true"><c.Icon/></span>{isSuggested && <span className="chip strong">Suggested for you</span>}</div>
         <div><h2>{c.name}</h2><p>{c.skill}</p></div>

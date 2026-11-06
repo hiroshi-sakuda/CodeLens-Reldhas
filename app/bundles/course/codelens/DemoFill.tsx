@@ -8,9 +8,9 @@ export function isDemo() {
     return sessionStorage.getItem('codelens-demo') === '1';
   } catch { return false; }
 }
-export default function DemoFill({ onGood, onWrong }: { onGood: () => void | Promise<void>; onWrong: () => void }) {
+export default function DemoFill({ onGood, onWrong, goodLabel = 'Fill a good answer' }: { onGood: () => void | Promise<void>; onWrong?: () => void; goodLabel?: string }) {
   const [busy, setBusy] = useState(false);
   if (!isDemo()) return null;
   async function good() { setBusy(true); try { await onGood(); } finally { setBusy(false); } }
-  return <div className="demo-fill" role="group" aria-label="Demo shortcuts"><strong>Demo</strong><button type="button" disabled={busy} onClick={good}>{busy?'Preparing…':'Fill a good answer'}</button><button type="button" disabled={busy} onClick={onWrong}>Fill a wrong answer</button></div>;
+  return <div className="demo-fill" role="group" aria-label="Demo shortcuts"><strong>Demo</strong><button type="button" disabled={busy} onClick={good}>{busy?'Preparing…':goodLabel}</button>{onWrong&&<button type="button" disabled={busy} onClick={onWrong}>Fill a wrong answer</button>}</div>;
 }

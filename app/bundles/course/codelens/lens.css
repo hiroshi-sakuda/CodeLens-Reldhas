@@ -76,3 +76,10 @@
 .criterion-guidance p{margin:4px 0 8px;color:var(--ink-soft)}
 .guidance-heading{display:flex;justify-content:space-between;align-items:center}
 .guidance-reminder{border-top:1px solid var(--line);padding-top:8px;font-size:13px}
+.lr-line.pickable{cursor:pointer}
+.lr-line.pickable:hover{background:var(--hover)}
+.lr-line.pickable.annotated:hover{background:var(--good-box)}
+/* The Terminal summary already names the panel, so the console's own heading row is not repeated. */
+.lr-terminal .console-heading h3{display:none}
+.lr-terminal .console-heading{justify-content:flex-end}
+.lr-sel .lr-line.pickable:hover{background:transparent}
