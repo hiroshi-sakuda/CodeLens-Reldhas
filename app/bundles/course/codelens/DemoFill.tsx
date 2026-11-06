@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './demo-fill.css';
 // Demo shortcut: fills a good or a wrong answer so a presenter doesn't have to type.
 // Shown only when the page was opened with ?demo in the address.
 export function isDemo() {

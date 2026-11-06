@@ -20,14 +20,7 @@ export function questionFeedback(question, choice, reason) {
   else if (reasonRating === 'good') comment = `You wrote “${quote}”: that's the right idea. Which option actually does that?`;
   else if (correct) comment = `Right choice. Your reason, “${quote}”, could say more: what in the story makes this concept the best fit?`;
   else comment = `You wrote “${quote}”. What does the story need most, and which option gives it?`;
-  const good = [], improve = [];
-  const chosen = question.options.find(o => o.id === choice);
-  if (correct) good.push(`You chose the right concept: ${chosen.text}.`);
-  else if (chosen) improve.push(`${chosen.text} isn't the best fit here. What does the story need most?`);
-  if (reasonRating === 'good') good.push(correct ? `Your reason “${quote}” names what the story needs.` : `Your reason “${quote}” is on the right track.`);
-  else if (reasonRating === 'partly') improve.push(`Your reason “${quote}” could say what in the story makes this concept fit.`);
-  else improve.push(comment);
-  return { questionId: question.id, correct, correctOption: question.correct, chosen: choice, reasonRating, comment, good, improve };
+  return { questionId: question.id, correct, correctOption: question.correct, chosen: choice, reasonRating, comment };
 }
 // Demo answers: the right option with a reason that names what the story needs, or a wrong option with a vague reason.
 export function demoAnswer(question, kind) {

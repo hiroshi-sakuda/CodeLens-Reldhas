@@ -25,20 +25,24 @@ judgement."
 ## 2. Concept Match: is it the right approach? (1 min)
 
 1. Start Concept Match on Easy.
-2. **Fill a wrong answer**, then **Check answer**. Point at *What to improve*.
-3. **Next question**, **Fill a good answer**, **Check answer**. Point at *What you
-   did well*, which quotes the student's own reason.
+2. **Fill a wrong answer**, then **Check answer**. Point at why the chosen option
+   doesn't fit and the comment on the reason.
+3. **Next question**, **Fill a good answer**, **Check answer**. The comment quotes
+   the student's own reason.
 
 ## 3. Dry Run: does it do what it should? (45 s)
 
 1. Start Dry Run, **Fill a wrong answer**, **Submit and run**.
-2. "The code really runs." Point at the line where the prediction went wrong.
+2. "The code really runs." Point at *Where your trace went wrong*.
 
 ## 4. Lens Review: judge it without hints (1 min)
 
 1. Start Lens Review with Random criteria.
-2. **Fill a good answer** and **Submit review**.
-3. Point at the feedback for each comment: claim, lines, reasoning and fix.
+2. **Fill a good answer** and **Submit review**. If this exercise has no issues,
+   the good answer ticks *No issues found*; use **Next exercise** to get one with
+   issues, which shows more.
+3. Point at the AI feedback box under each comment: claim, lines, reasoning and
+   fix.
 
 ## 5. Skill Map (30 s)
 

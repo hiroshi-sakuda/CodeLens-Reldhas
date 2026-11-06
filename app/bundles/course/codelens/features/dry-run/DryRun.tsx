@@ -7,8 +7,7 @@ import type { ScreenProps } from '../../features';
 import { eligibleItems, label, pickItems, readCourse, topicName } from '../../course.js';
 import { createAttempt, getAttempt, lastDifficulty, listAttempts, updateAttempt } from '../../practice-log.js';
 import DemoFill from '../../DemoFill';
-import FeedbackPoints from '../../FeedbackPoints';
-import { displayOutput, dryRunFeedback, dryRunPoints, dryRunScore } from './feedback.js';
+import { displayOutput, dryRunFeedback, dryRunScore } from './feedback.js';
 import { questions } from './questions.js';
 import { runProgram } from './run-python.js';
 import { TraceInput, TraceResult } from './TraceTable';
@@ -68,7 +67,6 @@ function Exercise({ attemptId, onHome, onNext }: { attemptId: string; onHome: ()
           <div className="feedback-score-row"><div className="ai-heading"><h2><Sparkles size={18} aria-hidden="true"/>AI feedback</h2><span className="simulated-label">Simulated</span></div><span className={'result-mark '+(feedback.correct?'good':'bad')}>{feedback.correct?<Check size={15}/>:<X size={15}/>}{feedback.correct?'Correct':'Not quite'}</span></div>
           <p className="feedback-summary">The code ran for real. {feedback.correct?'Your trace matches its output.':'Compare your prediction with what it printed.'}</p>
           <div className="output-pair"><div><h4>Your prediction</h4><pre className="answer-code">{attempt.answers.prediction||' '}</pre></div><div><h4>Actual output</h4><pre className="answer-code">{feedback.actualOutput||' '}</pre></div></div>
-          <FeedbackPoints {...dryRunPoints(attempt.answers.prediction||'',feedback)}/>
           {!feedback.correct&&feedback.trace?.mostlyRight&&<p className="clean-answer">Your trace table was mostly right, so you get half the credit for this one.</p>}
           {feedback.mistake&&<section className="answer-section"><h3>Where your trace went wrong</h3><p className="clean-answer">{feedback.mistake}</p></section>}
           {feedback.trace&&<section className="answer-section"><h3>Your trace table</h3><TraceResult trace={feedback.trace}/></section>}

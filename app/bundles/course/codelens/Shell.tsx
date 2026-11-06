@@ -48,6 +48,6 @@ export default function Shell() {
   const [role, setRole] = useState<Role>('student');
   const go: Go = (id, params = {}) => { setRoute({ id, params }); window.scrollTo({ top: 0 }); };
   const studentPage = features.find(f => f.role === 'student' && f.kind === 'page');
-  if (route.id === 'lens-review') return <App onHome={() => go('home')} extraLink={studentPage && { label: studentPage.label, onClick: () => go(studentPage.id) }}/>;
+  if (route.id === 'lens-review') return <App onHome={() => go('home')} extraLink={studentPage && { label: studentPage.label, onClick: () => go(studentPage.id) }} openReview={route.params.reviewId}/>;
   return <Frame route={route} role={role} go={go} onRole={next => { setRole(next); go(next === 'ta' ? taHome() : 'home'); }}/>;
 }

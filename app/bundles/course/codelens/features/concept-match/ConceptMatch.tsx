@@ -6,7 +6,6 @@ import type { ScreenProps } from '../../features';
 import { eligibleItems, label, pickItems, readCourse, topicName } from '../../course.js';
 import { createAttempt, getAttempt, lastDifficulty, listAttempts, updateAttempt } from '../../practice-log.js';
 import DemoFill from '../../DemoFill';
-import FeedbackPoints from '../../FeedbackPoints';
 import { demoAnswer, questionFeedback, setFeedback } from './feedback.js';
 import { questions as library } from './questions.js';
 import './concept-match.css';
@@ -87,10 +86,10 @@ function QuestionSet({ attemptId, onHome, onNewSet }: { attemptId: string; onHom
       <aside className="review-panel">
         {fb?<div className="feedback-content" aria-live="polite">
           <div className="feedback-score-row"><div className="ai-heading"><h2><Sparkles size={18} aria-hidden="true"/>AI feedback</h2><span className="simulated-label">Simulated</span></div><span className={'result-mark '+(fb.correct?'good':'bad')}>{fb.correct?<Check size={15}/>:<X size={15}/>}{fb.correct?'Correct':'Not quite'}</span></div>
-          <div className="first-points"><FeedbackPoints good={fb.good} improve={fb.improve}/></div>
-          <section className="answer-section"><h3>Why {q.correct} fits</h3><p className="clean-answer">{right.why}</p></section>
+          <section className="answer-section first"><h3>Why {q.correct} fits</h3><p className="clean-answer">{right.why}</p></section>
           {chosen&&!fb.correct&&<section className="answer-section"><h3>Why not {chosen.id}?</h3><p className="clean-answer">{chosen.why}</p></section>}
           {others.length>0&&<details className="scoring-details"><summary>Why not the other options?</summary>{others.map((o: any)=><p key={o.id}><strong>{o.id}.</strong> {o.why}</p>)}</details>}
+          <div className="answer-fix reason-comment"><strong>Your reason · {reasonLabel[fb.reasonRating as keyof typeof reasonLabel]}</strong><p>{fb.comment}</p></div>
           <p className="related-concept"><span>Related concept</span> {q.concept}</p>
           <AnswerFeedback target="this explanation" value={attempt.ratings[q.id]} onChange={rating=>rate(q.id,rating)}/>
         </div>:<div className="brief-content"><h3>How this works</h3><ol className="review-steps"><li>Read the story.</li><li>Pick the concept that fits it best.</li><li>Say why in one line.</li></ol><p className="muted concept-note">Several options may work. Look for the one that fits what the story asks for. Your answer locks when you check it.</p></div>}

@@ -54,3 +54,15 @@ This pull request also changes the header, for students and TAs:
   `extraLink` so Lens Review shows the same link.
 - **TAs:** the TA screens appear as tabs next to CodeLens instead of a
   breadcrumb, since they aren't steps of one path.
+
+It also makes the Skill Map the only progress view, and puts every unfinished
+exercise in one place:
+
+- **My progress:** the Lens Review feedback link now opens the Skill Map instead.
+  The My progress page code is still in `App.tsx` but no longer reachable in the
+  practice shell.
+- **Saved reviews:** unfinished Lens Reviews are listed with the other unfinished
+  exercises under *Continue where you left off* on the home screen, and open
+  straight into the review (`openReview` in `App.tsx`). The list is hidden from
+  the Lens Review setup inside the shell. `App` used on its own, without
+  `onHome`, keeps both as before.
