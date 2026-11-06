@@ -1,0 +1,26 @@
+.continue-row{box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;width:100%;padding:12px 14px;border:0;border-radius:14px;background:var(--ground);font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.continue-stack{display:flex;flex-direction:column;gap:8px}
+.continue-row.row-hover:hover{background:var(--nav-hover)}
+.tile.on-sheet{background:var(--sheet);box-shadow:0 0 0 1px var(--line)}
+.continue-text{flex:1 1 200px;color:var(--ink-soft)}
+.continue-text strong{font-weight:600;color:var(--ink)}
+.continue-go{font-weight:600;color:var(--link);padding-right:4px}
+.practice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.practice-card2{display:flex;flex-direction:column;gap:16px;padding:22px}
+.practice-card2.suggested{border-color:var(--line-strong)}
+:root[data-theme="dark"] .practice-card2.suggested{background:#191f1e}
+.practice-card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.practice-card2 h2{margin:0 0 4px;font-size:22px}
+.practice-card2 p{margin:0;color:var(--ink-soft)}
+.practice-card2 .slip-note{padding:10px 12px;border-radius:10px;background:var(--amber-bg);color:var(--amber-text);font-size:13.5px}
+:root[data-theme="dark"] .practice-card2 .slip-note{box-shadow:inset 0 0 0 1px var(--amber-edge)}
+.practice-score{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.practice-score>div:first-child{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--ink-soft)}
+.practice-score strong{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+.practice-score strong.low{color:var(--amber-strong)}
+.practice-start{display:flex;flex-direction:column;gap:8px}
+.practice-setting{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--ink-faint)}
+.practice-setting .text-link{font-size:13px}
+.preparing-note{padding:12px;border-radius:var(--r-ctl);background:var(--ground);text-align:center;font-size:13.5px}
+.results-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.results-head .text-link{font-size:13.5px}

@@ -1,30 +1,34 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { difficulties, label } from './course.js';
+import { Brackets, SparkIcon } from './icons';
+import { SlimBar } from './bars';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 const generatingMs = 1500;
 export function Generating({ what, onDone }: { what: string; onDone: () => void }) {
   useEffect(() => { const timer = setTimeout(onDone, generatingMs); return () => clearTimeout(timer); }, []);
-  return <section className="generating" role="status"><Sparkles size={22}/><h1>Generating {what}…</h1><p className="muted">Using the course material your TA approved.</p><span className="simulated-label">Simulated</span></section>;
+  return <section className="sheet center-sheet generating2" role="status"><span className="tile big" aria-hidden="true"><SparkIcon size={24}/></span><h2>Generating {what}…</h2><p>Using the course material your TA approved.</p><span className="chip">Simulated</span></section>;
 }
-export default function DifficultySetup({ title, what, levels, autoStart, onStart, onBack }: {
-  title: string; what: string; levels: Record<Difficulty, string>; autoStart?: Difficulty;
+// Shown when a student chooses Change on a Practice card (Start skips it and uses the last difficulty).
+export default function DifficultySetup({ title, what, levels, autoStart, help, onStart, onBack }: {
+  title: string; what: string; levels: Record<Difficulty, string>; autoStart?: Difficulty; help?: { title: string; steps: string[] };
   onStart: (difficulty: Difficulty) => void; onBack: () => void;
 }) {
   const [difficulty, setDifficulty] = useState<Difficulty>(autoStart || 'easy');
   const [generating, setGenerating] = useState(!!autoStart);
-  if (generating) return <Generating what={what} onDone={() => onStart(difficulty)}/>;
-  return <section className="review-setup difficulty-setup">
-    <button className="back-to-setup" onClick={onBack}><ArrowLeft size={15}/>&nbsp;Back to practice</button>
-    <h1>{title}</h1>
-    <p>Choose a difficulty. The topic is picked for you from what your TA has published.</p>
-    <form onSubmit={e=>{e.preventDefault();setGenerating(true);}}>
-      <fieldset><legend className="sr-only">Difficulty</legend><div className="setup-focus">
-        {(difficulties as Difficulty[]).map(level=><label key={level} className={difficulty===level?'chosen':''}>
-          <input type="radio" name="difficulty" checked={difficulty===level} onChange={()=>setDifficulty(level)}/><span>{label(level)}<small>{levels[level]}</small></span>
-        </label>)}
-      </div></fieldset>
-      <div className="setup-actions"><span className="muted">Sample exercises</span><button className="primary" type="submit">Start practice<ArrowRight size={16}/></button></div>
-    </form>
-  </section>;
+  return <>
+    <SlimBar title={title} meta={generating ? label(difficulty) : 'Choose a difficulty'} onExit={onBack} help={help} leave={null}/>
+    {generating ? <Generating what={what} onDone={() => onStart(difficulty)}/> : <section className="sheet center-sheet">
+      <form className="setup-form" onSubmit={e => { e.preventDefault(); setGenerating(true); }}>
+        <div><h2 className="setup-title">How hard should it be?</h2><p className="muted-text">The topic is picked for you from what your TA has published.</p></div>
+        <fieldset className="option-list"><legend className="sr-only">Difficulty</legend>
+          {(difficulties as Difficulty[]).map(level => <label key={level} className="card hoverable vf option-card">
+            <Brackets/>
+            <input type="radio" name="difficulty" checked={difficulty === level} onChange={() => setDifficulty(level)}/>
+            <span className="option-text"><strong>{label(level)}</strong><small>{levels[level]}</small></span>
+          </label>)}
+        </fieldset>
+        <div className="setup-actions2"><span className="muted-text">Sample exercises</span><button className="btn btn-primary" type="submit">Start {title}</button></div>
+      </form>
+    </section>}
+  </>;
 }

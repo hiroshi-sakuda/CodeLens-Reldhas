@@ -34,3 +34,8 @@ export function assess(exercise, comments, conclusion = { noIssues: false, justi
   const rubric = Object.fromEntries(['claim','evidence','reasoning','fix'].map(k => [k, matches.reduce((s,m)=>s+m[k],0)/matches.length]));
   return { rubric, total: Object.values(rubric).reduce((a,b)=>a+b,0), found: matches.filter(m=>m.claim>0).length };
 }
+
+// Which planted issues a review found: the same test as assess() (the right lens and an issue keyword).
+export function findingFound(finding, comments) {
+  return comments.some(c => c.dimension === finding.dimension && finding.keywords.some(k => c.claim.toLowerCase().includes(k)));
+}

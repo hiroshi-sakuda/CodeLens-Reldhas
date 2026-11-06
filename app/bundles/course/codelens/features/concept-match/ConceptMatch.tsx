@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Sparkles, X } from 'lucide-react';
+import { ChevronRight, X } from 'lucide-react';
 import AnswerFeedback from '../../AnswerFeedback';
+import { SlimBar } from '../../bars';
 import DifficultySetup, { type Difficulty } from '../../DifficultySetup';
 import type { ScreenProps } from '../../features';
-import { eligibleItems, label, pickItems, readCourse, topicName } from '../../course.js';
-import { createAttempt, getAttempt, lastDifficulty, listAttempts, updateAttempt } from '../../practice-log.js';
+import { eligibleItems, pickItems, readCourse, topicName } from '../../course.js';
+import { Brackets, CheckIcon, SparkIcon } from '../../icons';
+import { createAttempt, getAttempt, listAttempts, updateAttempt } from '../../practice-log.js';
 import DemoFill from '../../DemoFill';
+import { ScoreBar } from '../../ui';
 import { demoAnswer, questionFeedback, setFeedback } from './feedback.js';
 import { questions as library } from './questions.js';
 import './concept-match.css';
+export const help = { title: 'How Concept Match works', steps: ['Read the story. Each set has 5.', 'Pick the concept that fits it best and say why in one line.', 'Check your answer. It locks and the feedback explains every option.', 'Finish the set to see your results.'] };
 const levels = { easy: 'Clear story; wrong options are clearly unsuitable.', medium: 'Two plausible options to choose between.', hard: 'Several plausible options that differ in one requirement.' };
 const reasonLabel = { good: 'Good reason', partly: 'Could say more', missing: 'No reason given' };
 const summaryStep = -1;
@@ -23,9 +27,9 @@ export default function ConceptMatchScreen({ params, go }: ScreenProps) {
     if (!picked.length) { setError('Your TA is preparing this: no topics are published yet.'); return; }
     setAttemptId(createAttempt({ function: 'concept-match', title: `Set of ${picked.length} questions`, difficulty, topicId: null, exerciseIds: picked.map((q: any) => q.id), answers: { choices: {}, reasons: {}, checked: [] }, fromSuggestion: !!params.fromSuggestion }).id);
   }
-  if (error) return <section className="review-setup difficulty-setup"><h1>Concept Match</h1><p>{error}</p><button className="secondary" onClick={()=>go('home')}>Back to practice</button></section>;
-  if (!attemptId) return <DifficultySetup title="Concept Match" what="a set of questions" levels={levels} autoStart={again || (params.fromSuggestion ? lastDifficulty('concept-match') : undefined)} onStart={start} onBack={()=>go('home')}/>;
-  return <QuestionSet key={attemptId} attemptId={attemptId} onHome={()=>go('home')} onNewSet={()=>{setAgain(getAttempt(attemptId).difficulty);setAttemptId(null);}}/>;
+  if (error) return <><SlimBar title="Concept Match" onExit={() => go('home')} leave={null}/><section className="sheet center-sheet"><p>{error}</p><button className="btn btn-outline" onClick={() => go('home')}>Back to Practice</button></section></>;
+  if (!attemptId) return <DifficultySetup title="Concept Match" what="a set of questions" levels={levels} help={help} autoStart={again || params.difficulty} onStart={start} onBack={() => go('home')}/>;
+  return <QuestionSet key={attemptId} attemptId={attemptId} onHome={() => go('home')} onNewSet={() => { setAgain(getAttempt(attemptId).difficulty); setAttemptId(null); }}/>;
 }
 function QuestionSet({ attemptId, onHome, onNewSet }: { attemptId: string; onHome: () => void; onNewSet: () => void }) {
   const [attempt, setAttempt] = useState<any>(() => getAttempt(attemptId));
@@ -46,22 +50,37 @@ function QuestionSet({ attemptId, onHome, onNewSet }: { attemptId: string; onHom
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   const rate = (id: string, rating: any) => setAttempt(updateAttempt(attemptId, { ratings: { ...attempt.ratings, [id]: rating } }));
-  const steps = <div className="review-focus-summary set-progress"><span>Criteria</span><strong>Appropriateness</strong>
-    <span className="set-dots" aria-label="Questions in this set">{current===summaryStep?'Results':`Question ${current+1} of ${questions.length}`}
-      {questions.map((q,i)=>{const done=checked.includes(q.id);const right=done&&choices[q.id]===q.correct;return <button key={q.id} disabled={!done&&i!==current} className={(done?(right?'right':'wrong'):'')+(i===current?' at':'')} aria-label={`Question ${i+1}${done?(right?', correct':', not quite'):''}`} aria-current={i===current?'step':undefined} onClick={()=>setCurrent(i)}/>;})}
-      {attempt.status==='submitted'&&current!==summaryStep&&<button className="results-link" onClick={()=>setCurrent(summaryStep)}>Results</button>}
-    </span></div>;
-  const toolbar = <div className="workspace-toolbar"><div className="exercise-select"><strong>{current===summaryStep?'Your results':topicName(questions[current].topicId)}</strong></div><div className="exercise-meta"><span>Concept Match</span><span className="difficulty-tag">{label(attempt.difficulty)}</span></div></div>;
+  const meta = `Concept Match, ${attempt.difficulty}`;
+  const progress = <div className="set-progress2">
+    <div className="segments" role="group" aria-label="Questions in this set">{questions.map((q, i) => {
+      const done = checked.includes(q.id); const right = done && choices[q.id] === q.correct;
+      return <button key={q.id} disabled={!done && i !== current} className={(i === current ? 'at' : done ? (right ? 'right' : 'wrong') : '')} aria-label={`Question ${i + 1}${done ? (right ? ', correct' : ', not quite') : ''}`} aria-current={i === current ? 'step' : undefined} onClick={() => setCurrent(i)}/>;
+    })}</div>
+    <span>{current === summaryStep ? 'Results' : `Question ${current + 1} of ${questions.length}`}</span>
+  </div>;
+
   if (current === summaryStep) {
     const correct = questions.filter(q => choices[q.id] === q.correct).length;
     const message = correct === questions.length ? 'A perfect set. Try a harder level, or a Lens Review to use these concepts on real code.' : correct >= 3 ? 'Good work. Open the ones you missed to see why the other option fits better.' : 'Open each question to see why the right concept fits; the explanations are the fastest way to improve.';
-    return <>{toolbar}{steps}
-      <section className="set-summary"><div className="compact-score"><strong>{correct}</strong><span>/ {questions.length} correct</span></div><p>{message}</p>
-        <ol>{questions.map((q,i)=>{const fb=questionFeedback(q,choices[q.id]??null,reasons[q.id]??'');return <li key={q.id}><button onClick={()=>setCurrent(i)}><span className={'result-dot '+(fb.correct?'right':'wrong')}>{fb.correct?<Check size={14}/>:<X size={14}/>}</span><span className="set-summary-text"><span>{q.story}</span><small>{q.concept} · {reasonLabel[fb.reasonRating as keyof typeof reasonLabel]}</small></span><ArrowRight size={15}/></button></li>;})}</ol>
-      </section>
-      <div className="submission-bar"><div className="completed-actions"><button className="secondary" onClick={onHome}><ArrowLeft size={16}/>Back to practice</button><button className="primary" onClick={onNewSet}>New set<ArrowRight size={17}/></button></div></div>
+    return <>
+      <SlimBar title="Your results" meta={meta} onExit={onHome} help={help} leave={null} aside={progress}/>
+      <main className="sheet cm-sheet"><div className="cm-column">
+        <div className="summary-head"><div className="big-score"><strong>{correct}</strong><span>/ {questions.length} correct</span></div><p>{message}</p></div>
+        <ScoreBar value={correct / questions.length}/>
+        <ol className="summary-list">{questions.map((q, i) => {
+          const fb = questionFeedback(q, choices[q.id] ?? null, reasons[q.id] ?? '');
+          return <li key={q.id}><button className="summary-row row-hover" onClick={() => setCurrent(i)}>
+            <span className={'result-dot2 ' + (fb.correct ? 'good' : 'warn')} aria-hidden="true">{fb.correct ? <CheckIcon/> : <X size={14} strokeWidth={2.6}/>}</span>
+            <span className="summary-text"><span>{q.story}</span><small>{q.concept} · {reasonLabel[fb.reasonRating as keyof typeof reasonLabel]}</small></span>
+            <span className="sr-only">{fb.correct ? 'Correct' : 'Not quite'}. Open question {i + 1}</span>
+            <ChevronRight size={18} strokeWidth={1.8} aria-hidden="true"/>
+          </button></li>;
+        })}</ol>
+        <div className="cm-actions"><button className="btn btn-outline" onClick={onHome}>Back to Practice</button><button className="btn btn-primary" onClick={onNewSet}>Start a new set</button></div>
+      </div></main>
     </>;
   }
+
   const q = questions[current];
   const locked = checked.includes(q.id);
   const choice = choices[q.id] ?? null;
@@ -71,31 +90,46 @@ function QuestionSet({ attemptId, onHome, onNewSet }: { attemptId: string; onHom
   const right = q.options.find((o: any) => o.id === q.correct);
   const chosen = q.options.find((o: any) => o.id === choice);
   const others = q.options.filter((o: any) => o.id !== q.correct && o.id !== choice);
-  return <>{toolbar}{steps}
-    <div className="workspace concept-workspace">
-      <section className="editor-panel concept-question" aria-label={`Question ${current+1}`}>
-        <p className="concept-story">{q.story}</p>
-        <fieldset><legend>Choose one concept</legend>
-          {q.options.map((o: any)=><label key={o.id} className={'concept-option '+(!locked?(choice===o.id?'chosen':''):o.id===q.correct?'right':o.id===choice?'wrong':'faded')}>
-            <input type="radio" className="sr-only" name={q.id} checked={choice===o.id} disabled={locked} onChange={()=>saveAnswers({choices:{...choices,[q.id]:o.id}})}/>
-            <span className="option-id">{locked&&o.id===q.correct?<Check size={14}/>:locked&&o.id===choice?<X size={14}/>:o.id}</span><span>{o.text}</span>
+  return <>
+    <SlimBar title={topicName(q.topicId).replace(' & ', ' and ')} meta={meta} onExit={onHome} help={help} aside={progress} leave={locked ? null : undefined}/>
+    <main className="sheet cm-sheet"><div className="cm-column">
+      <p className="cm-story">{q.story}</p>
+      {!locked ? <>
+        <fieldset className="option-list"><legend className="cm-legend">Which concept fits best?</legend>
+          {q.options.map((o: any) => <label key={o.id} className="card hoverable vf option-card cm-option">
+            <Brackets/>
+            <span className="option-key" aria-hidden="true">{o.id}</span><span className="option-text">{o.text}</span>
+            <input type="radio" name={q.id} checked={choice === o.id} onChange={() => saveAnswers({ choices: { ...choices, [q.id]: o.id } })}/>
           </label>)}
         </fieldset>
-        <label className="concept-reason">Why? <span className="muted">(one line, required)</span><input value={reason} maxLength={200} readOnly={locked} required aria-required="true" placeholder="What in the story makes this concept fit?" onChange={e=>saveAnswers({reasons:{...reasons,[q.id]:e.target.value}})}/></label>
-      </section>
-      <aside className="review-panel">
-        {fb?<div className="feedback-content" aria-live="polite">
-          <div className="feedback-score-row"><div className="ai-heading"><h2><Sparkles size={18} aria-hidden="true"/>AI feedback</h2><span className="simulated-label">Simulated</span></div><span className={'result-mark '+(fb.correct?'good':'bad')}>{fb.correct?<Check size={15}/>:<X size={15}/>}{fb.correct?'Correct':'Not quite'}</span></div>
-          <section className="answer-section first"><h3>Why {q.correct} fits</h3><p className="clean-answer">{right.why}</p></section>
-          {chosen&&!fb.correct&&<section className="answer-section"><h3>Why not {chosen.id}?</h3><p className="clean-answer">{chosen.why}</p></section>}
-          {others.length>0&&<details className="scoring-details"><summary>Why not the other options?</summary>{others.map((o: any)=><p key={o.id}><strong>{o.id}.</strong> {o.why}</p>)}</details>}
-          <div className="answer-fix reason-comment"><strong>Your reason · {reasonLabel[fb.reasonRating as keyof typeof reasonLabel]}</strong><p>{fb.comment}</p></div>
-          <p className="related-concept"><span>Related concept</span> {q.concept}</p>
-          <AnswerFeedback target="this explanation" value={attempt.ratings[q.id]} onChange={rating=>rate(q.id,rating)}/>
-        </div>:<div className="brief-content"><h3>How this works</h3><ol className="review-steps"><li>Read the story.</li><li>Pick the concept that fits it best.</li><li>Say why in one line.</li></ol><p className="muted concept-note">Several options may work. Look for the one that fits what the story asks for. Your answer locks when you check it.</p></div>}
-      </aside>
-    </div>
-    {!locked&&<DemoFill onGood={()=>fill('good')} onWrong={()=>fill('wrong')}/>}
-    <div className="submission-bar">{locked?<div className="completed-actions"><button className="secondary" onClick={onHome}><ArrowLeft size={16}/>Back to practice</button><button className="primary" onClick={next}>{checked.length===questions.length?'See your results':'Next question'}<ArrowRight size={17}/></button></div>:<><button className="secondary" onClick={onHome}><ArrowLeft size={16}/>Save and leave</button><button className="primary" disabled={!choice||!reason.trim()} onClick={()=>check(q.id)}>Check answer<ArrowRight size={17}/></button></>}</div>
+        <label className="field">Why does it fit? One line.
+          <input value={reason} maxLength={200} required aria-required="true" placeholder="What in the story makes this concept fit?" onChange={e => saveAnswers({ reasons: { ...reasons, [q.id]: e.target.value } })}/>
+        </label>
+        <DemoFill onGood={() => fill('good')} onWrong={() => fill('wrong')}/>
+        <div className="cm-actions spread"><span className="muted-text">Your answer locks when you check it.</span><button className="btn btn-primary" disabled={!choice || !reason.trim()} onClick={() => check(q.id)}>Check answer</button></div>
+      </> : <>
+        <section className="option-list" aria-label="Your answer, checked">
+          {q.options.map((o: any) => {
+            const isRight = o.id === q.correct, isChosen = o.id === choice;
+            return <div key={o.id} className={'card vf option-card cm-option checked' + (isRight ? ' right' : isChosen ? ' wrong' : ' faded') + (isChosen ? ' on' : '')}>
+              {isChosen && <Brackets/>}
+              <span className="option-key" aria-hidden="true">{isRight ? <CheckIcon/> : isChosen ? <X size={14} strokeWidth={2.6}/> : o.id}</span>
+              <span className="option-text">{o.text}</span>
+              {isChosen ? <span className="option-flag">Your answer</span> : isRight ? <span className="option-flag">Right answer</span> : null}
+            </div>;
+          })}
+        </section>
+        <section aria-labelledby="ai-title" className="feedback-block cm-feedback" aria-live="polite">
+          <div className="score-head"><div className="ai-title"><SparkIcon/><h2 id="ai-title" className="panel-title">AI feedback</h2></div><span className={'chip ' + (fb!.correct ? 'good' : 'warn')}>{fb!.correct ? <CheckIcon/> : <X size={14} strokeWidth={2.6}/>}{fb!.correct ? 'Correct' : 'Not quite'}</span></div>
+          <div><h3 className="small-title">Why {q.correct} fits</h3><p>{right.why}</p></div>
+          {chosen && !fb!.correct && <div><h3 className="small-title">Why not {chosen.id}?</h3><p>{chosen.why}</p></div>}
+          <div className="note-box plain"><div className="note-head"><h3 className="small-title">Your reason</h3><span className={'chip ' + (fb!.reasonRating === 'good' ? 'good' : 'warn')}>{reasonLabel[fb!.reasonRating as keyof typeof reasonLabel]}</span></div><p>{fb!.comment}</p></div>
+          {others.length > 0 && <details className="more-details"><summary>Why not the other options?</summary>{others.map((o: any) => <p key={o.id}><strong>{o.id}.</strong> {o.why}</p>)}</details>}
+          <p className="muted-text">{q.concept}</p>
+          <AnswerFeedback target="this explanation" value={attempt.ratings[q.id]} onChange={rating => rate(q.id, rating)}/>
+        </section>
+        <div className="cm-actions"><button className="btn btn-outline" onClick={onHome}>Back to Practice</button><button className="btn btn-primary" onClick={next}>{checked.length === questions.length ? 'See your results' : 'Next question'}</button></div>
+      </>}
+    </div></main>
   </>;
 }

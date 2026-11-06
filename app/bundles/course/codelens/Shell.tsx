@@ -2,19 +2,13 @@ import { useEffect, useRef, useState, type ComponentType } from 'react';
 import App from './App';
 import StudentHome from './StudentHome';
 import { features, type Go, type Note } from './features';
-import { BellIcon, CheckIcon, CloseIcon, HelpIcon, Logo, MoonIcon, PracticeIcon, SunIcon } from './icons';
+import { ThemeButton } from './bars';
+import { BellIcon, Logo, PracticeIcon } from './icons';
 import { useTheme } from './theme';
 import './shell.css';
 type Role = 'student' | 'ta';
 type Route = { id: string; params: Record<string, any> };
-const slimExercises = false as boolean; // Stage 2 turns on the slim exercise bar.
 const taHome = () => features.find(f => f.role === 'ta' && f.kind === 'page')?.id || 'home';
-
-function ThemeButton() {
-  const [theme, toggle] = useTheme();
-  const label = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
-  return <button className="icon-btn" onClick={toggle} aria-label={label} title={label}>{theme === 'dark' ? <SunIcon/> : <MoonIcon/>}</button>;
-}
 
 function Bell({ go }: { go: Go }) {
   const [open, setOpen] = useState(false);
@@ -71,36 +65,12 @@ export function TopBar({ role, routeId, go, onRole }: { role: Role; routeId: str
   </header>;
 }
 
-/* Exercise screens have no navigation: exit, title, help and Save and leave. Submit lives in the work panel. */
-export function SlimBar({ title, meta, onExit, help, aside, leave }: { title: string; meta?: string; onExit: () => void; help?: { title: string; steps: string[] }; aside?: React.ReactNode; leave?: { label: string; onClick: () => void } | null }) {
-  const [showHelp, setShowHelp] = useState(false);
-  return <>
-    <header className="cl-slimbar">
-      <button className="icon-btn boxed" aria-label="Exit to Practice" onClick={onExit}><CloseIcon/></button>
-      <div className="cl-slimbar-title"><h1>{title}</h1>{meta && <span>{meta}</span>}</div>
-      {aside}
-      {help && <button className="icon-btn" aria-label={help.title} onClick={() => setShowHelp(true)}><HelpIcon/></button>}
-      <ThemeButton/>
-      {leave !== null && <button className="btn btn-outline btn-sm" onClick={leave?.onClick || onExit}>{leave?.label || 'Save and leave'}</button>}
-    </header>
-    {showHelp && help && <HelpModal help={help} onClose={() => setShowHelp(false)}/>}
-  </>;
-}
-
-export function HelpModal({ help, onClose, children }: { help: { title: string; steps: string[] }; onClose: () => void; children?: React.ReactNode }) {
-  return <div className="modal-backdrop" onClick={onClose}><section className="modal panel-in" role="dialog" aria-modal="true" aria-labelledby="help-title" onClick={e => e.stopPropagation()}>
-    <button autoFocus className="icon-btn modal-close" aria-label="Close help" onClick={onClose}><CloseIcon/></button>
-    <h2 id="help-title">{help.title}</h2><ol>{help.steps.map(step => <li key={step}>{step}</li>)}</ol>{children}
-    <button className="btn btn-primary" onClick={onClose}>Got it<CheckIcon className=""/></button>
-  </section></div>;
-}
-
 function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; onRole: (role: Role) => void }) {
   const feature = features.find(f => f.id === route.id);
   const has = (id: string) => id === 'lens-review' || features.some(f => f.id === id);
   const screenProps = { params: route.params, go, has };
   // Exercises draw their own slim bar; every other screen sits on a sheet under the top bar.
-  if (slimExercises && feature && feature.kind === 'practice') return <div className="app-frame exercise"><feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/></div>;
+  if (feature && feature.kind === 'practice') return <div className="app-frame exercise"><feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/></div>;
   return <div className="app-frame">
     <TopBar role={role} routeId={route.id} go={go} onRole={onRole}/>
     <main className="sheet page"><div className="page-inner">
@@ -115,6 +85,6 @@ export default function Shell() {
   const [role, setRole] = useState<Role>('student');
   useTheme();
   const go: Go = (id, params = {}) => { setRoute({ id, params }); window.scrollTo({ top: 0 }); };
-  if (route.id === 'lens-review') return <div className="app-frame exercise"><App onHome={() => go('home')} extraLink={{ label: 'Skill map', onClick: () => go('skill-map') }} openReview={route.params.reviewId}/></div>;
+  if (route.id === 'lens-review') return <div className="app-frame exercise"><App onHome={() => go('home')} params={route.params}/></div>;
   return <Frame route={route} role={role} go={go} onRole={next => { setRole(next); go(next === 'ta' ? taHome() : 'home'); }}/>;
 }

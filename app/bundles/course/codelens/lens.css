@@ -1,0 +1,78 @@
+/* Lens Review */
+.lr-brief{display:flex;flex-wrap:wrap;gap:12px 32px}
+.lr-brief>div{flex:1 1 260px}
+.lr-brief h3{margin:0 0 6px;font-size:13px}
+.lr-brief p{margin:0;color:var(--ink-soft)}
+.lr-brief ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.lr-brief li{display:flex;gap:8px;align-items:baseline}
+.lr-brief li svg{flex-shrink:0;color:var(--good-text);transform:translateY(2px)}
+.lr-instruction{display:flex;align-items:center;gap:10px;font-weight:500}
+.lr-icon{width:28px;height:28px;border-radius:9px;background:var(--chip-bg);color:var(--chip-text);display:flex;align-items:center;justify-content:center}
+.lr-code{font-size:14px;user-select:none}
+.lr-line{display:flex;min-width:max-content;padding:0 8px;border-radius:8px}
+.lr-line.annotated{background:var(--good-box);box-shadow:inset 3px 0 0 var(--good-edge)}
+.lr-line code{white-space:pre}
+.lr-ln{flex:0 0 36px;padding:0;margin:0;border:0;background:none;text-align:left;font:inherit;color:var(--ink-faint);cursor:pointer}
+.lr-ln:hover:not(:disabled){color:var(--ink);font-weight:600}
+.lr-ln:disabled{cursor:default;opacity:1}
+.lr-line.selected .lr-ln{color:var(--ink);font-weight:500}
+.lr-sel{position:relative;margin:4px 0;border-radius:8px;background:var(--good-box)}
+:root[data-theme="light"] .lr-sel,:root:not([data-theme]) .lr-sel{background:#eef7dd}
+.lr-sel .lr-line.annotated{background:transparent;box-shadow:none}
+.sel-c{position:absolute;width:16px;height:16px;border:0 solid var(--ink);animation:cl-frame var(--t-frame) var(--ease) both}
+.sel-c.tl{top:-4px;left:-4px;border-top-width:2px;border-left-width:2px;border-top-left-radius:12px;--fx:6px;--fy:6px}
+.sel-c.tr{top:-4px;right:-4px;border-top-width:2px;border-right-width:2px;border-top-right-radius:12px;--fx:-6px;--fy:6px}
+.sel-c.bl{bottom:-4px;left:-4px;border-bottom-width:2px;border-left-width:2px;border-bottom-left-radius:12px;--fx:6px;--fy:-6px}
+.sel-c.br{bottom:-4px;right:-4px;border-bottom-width:2px;border-right-width:2px;border-bottom-right-radius:12px;--fx:-6px;--fy:-6px}
+@keyframes cl-frame{from{opacity:0;transform:translate(var(--fx),var(--fy))}to{opacity:1;transform:none}}
+.lr-terminal{border-top:1px solid var(--line-soft)}
+.lr-terminal summary{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 16px;cursor:pointer;font-weight:600;font-size:13.5px}
+.lr-terminal summary span{margin-left:auto;color:var(--ink-faint);font-weight:400}
+.lr-terminal .python-console{border-top:1px solid var(--line-soft);background:var(--sheet-2)}
+.lr-terminal .console-heading{background:var(--sheet-2)!important;border-color:var(--line-soft)!important}
+
+.lr-tabs{display:flex;gap:4px;padding:6px 12px 0;border-bottom:1px solid var(--line-soft)}
+.lr-tabs button{display:inline-flex;align-items:center;gap:6px;min-height:46px;padding:0 10px;border:0;border-bottom:2px solid transparent;background:transparent;font:inherit;color:var(--ink-soft);cursor:pointer}
+.lr-tabs button[aria-selected="true"]{border-bottom-color:var(--ink);font-weight:600;color:var(--ink)}
+.lr-tabs .count-badge{min-width:20px;height:20px;padding:0 6px}
+
+.lr-form{display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:var(--r-card);border:1px solid var(--line-strong)}
+.lr-form .panel-title{font-size:17px}
+.lr-form .field{font-size:13.5px}
+.lines{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft)}
+.lens-pick{border:0;margin:0;padding:0}
+.lens-pick legend{padding:0;margin-bottom:8px;font-weight:600;font-size:13.5px}
+.lens-pick>div{display:flex;flex-wrap:wrap;gap:6px}
+.lens-pick .chip-toggle{min-height:36px;padding:0 13px}
+.lr-form-actions{display:flex;justify-content:flex-end;gap:8px}
+.lr-saved{display:flex;flex-direction:column;gap:8px}
+.saved-note{padding:12px 14px;border-radius:var(--r-card);background:var(--ground);display:flex;flex-direction:column;gap:4px}
+.saved-note p{margin:0}
+.saved-note .note-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.saved-note .lines{margin-right:4px}
+.saved-actions{margin-left:auto;display:flex;align-items:center;gap:2px}
+.saved-actions .text-link{padding:0 8px;font-size:13px;font-weight:600}
+.saved-actions .icon-btn{width:32px;height:32px;color:var(--ink-soft)}
+.lr-guide{display:flex;flex-direction:column;gap:16px}
+.lr-guide ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.lr-guide .muted-text{margin-top:6px}
+.lr-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 16px;text-align:center}
+.lr-footer{flex-direction:column;align-items:stretch;gap:10px}
+.lr-noissues{display:flex;align-items:center;gap:10px;min-height:32px;cursor:pointer}
+.lr-noissues input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
+:root[data-theme="dark"] .lr-noissues input{accent-color:var(--action)}
+.lr-noissues:has(input:disabled){opacity:.55;cursor:not-allowed}
+.lr-submit{align-items:center}
+
+/* Lens tips in the review guide */
+.criterion-buttons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.criterion-buttons button{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--r-pill);background:var(--sheet);font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
+.criterion-buttons button[aria-expanded="true"],.criterion-buttons button:hover{background:var(--ground)}
+.criterion-buttons .focus-dot{display:none}
+.criteria-help-hint{margin:8px 0 0!important;font-size:13px;color:var(--ink-faint)}
+.criterion-guidance{margin-top:10px;padding:14px;border-radius:var(--r-card);background:var(--ground);border:0;font-size:13.5px}
+.criterion-guidance h4{margin:0 0 6px;font-size:13.5px;color:var(--ink)}
+.criterion-guidance ul{margin:8px 0 12px;padding-left:18px;color:var(--ink-soft)}
+.criterion-guidance p{margin:4px 0 8px;color:var(--ink-soft)}
+.guidance-heading{display:flex;justify-content:space-between;align-items:center}
+.guidance-reminder{border-top:1px solid var(--line);padding-top:8px;font-size:13px}

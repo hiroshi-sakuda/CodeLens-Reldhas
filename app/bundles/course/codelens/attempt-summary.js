@@ -17,13 +17,13 @@ export function lensReviewItems(attempt, bank = exercises) {
 export function summarizeLensReview(attempt, reviews = [], bank = exercises) {
   const adjusted = reviewedScore(reviews, attempt.id);
   const total = adjusted ?? attempt.result.total;
-  return { id: attempt.id, function: 'lens-review', title: bank.find(e => e.id === attempt.exercise)?.title || 'Lens Review', date: attempt.date, score: total / 10, shown: `${total.toFixed(1)} / 10`, items: lensReviewItems(attempt, bank), real: true };
+  return { id: attempt.id, function: 'lens-review', title: bank.find(e => e.id === attempt.exercise)?.title || 'Lens Review', date: attempt.date, score: total / 10, shown: `${+total.toFixed(1)} / 10`, items: lensReviewItems(attempt, bank), real: true };
 }
 export function summarizePractice(attempt) {
   const title = attempt.title || functionNames[attempt.function];
   if (attempt.function === 'dry-run') {
     const value = attempt.feedback.correct ? 1 : 0;
-    return { id: attempt.id, function: 'dry-run', title, date: attempt.submittedAt, score: attempt.score, shown: attempt.feedback.correct ? 'Correct' : attempt.score ? 'Partly' : 'Not quite', items: [{ lens: 'Correctness', value, source: 'exam' }], note: attempt.feedback.mistake || attempt.feedback.tip, fromSuggestion: attempt.fromSuggestion, real: true };
+    return { id: attempt.id, function: 'dry-run', title, date: attempt.submittedAt, score: attempt.score, shown: attempt.feedback.correct ? 'Correct' : attempt.score ? 'Half credit' : 'Not quite', items: [{ lens: 'Correctness', value, source: 'exam' }], note: attempt.feedback.mistake || attempt.feedback.tip, fromSuggestion: attempt.fromSuggestion, real: true };
   }
   const questions = attempt.feedback.questions;
   return { id: attempt.id, function: 'concept-match', title, date: attempt.submittedAt, score: attempt.score, shown: `${attempt.feedback.correctCount} / ${questions.length}`, items: questions.map(q => ({ lens: 'Appropriateness', value: q.correct ? 1 : 0, source: 'exam' })), note: questions.find(q => !q.correct)?.comment || questions[0]?.comment, fromSuggestion: attempt.fromSuggestion, real: true };

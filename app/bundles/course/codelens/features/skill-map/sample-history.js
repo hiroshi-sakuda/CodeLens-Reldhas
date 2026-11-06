@@ -3,7 +3,7 @@
 const daysAgo = days => new Date(Date.now() - days * 86400000).toISOString();
 const dryRun = (id, title, days, correct, note) => ({ id, function: 'dry-run', title, date: daysAgo(days), score: correct ? 1 : 0, shown: correct ? 'Correct' : 'Not quite', items: [{ lens: 'Correctness', value: correct ? 1 : 0, source: 'exam' }], note });
 const conceptSet = (id, days, right, note) => ({ id, function: 'concept-match', title: 'Set of 5 questions', date: daysAgo(days), score: right / 5, shown: `${right} / 5`, items: [0, 1, 2, 3, 4].map(i => ({ lens: 'Appropriateness', value: i < right ? 1 : 0, source: 'exam' })), note });
-const lensReview = (id, title, days, total, items, note, taComment) => ({ id, function: 'lens-review', title, date: daysAgo(days), score: total / 10, shown: `${total.toFixed(1)} / 10`, items: items.map(([lens, value]) => ({ lens, value, source: 'review' })), note, taComment });
+const lensReview = (id, title, days, total, items, note, taComment) => ({ id, function: 'lens-review', title, date: daysAgo(days), score: total / 10, shown: `${+total.toFixed(1)} / 10`, items: items.map(([lens, value]) => ({ lens, value, source: 'review' })), note, taComment });
 export const sampleHistory = [
   dryRun('sample-dr-1', 'While loop countdown', 1, false, '`while n > 0` runs once more than you traced: n is still 1 before the last iteration.'),
   conceptSet('sample-cm-1', 2, 4, 'Your reason named the requirement in the story. That is what makes the answer exam-ready.'),
