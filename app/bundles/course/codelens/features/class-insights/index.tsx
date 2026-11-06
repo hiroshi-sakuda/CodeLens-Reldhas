@@ -1,14 +1,14 @@
 import type { Feature } from '../../features';
 import { summarizeLensReview, summarizePractice } from '../../attempt-summary.js';
 import { functionNames, practiceFunctions } from '../../course.js';
+import { InsightsIcon } from '../../icons';
 import { dimensions } from '../../model.js';
 import { lensReviewData, listAttempts, readTa } from '../../practice-log.js';
+import { pct, ScoreBar, shortDate } from '../../ui';
 import { sampleSubmissions } from '../review-queue/submissions.js';
 import { computeInsights } from './insights.js';
 import { sampleClass, sampleVotes } from './sample-class.js';
 import './class-insights.css';
-import { InsightsIcon } from '../../icons';
-const pct = (value: number | null) => value == null ? '—' : Math.round(value * 100) + '%';
 const you = 'Demo student';
 function loadInsights() {
   const ta = readTa();
@@ -23,36 +23,50 @@ function loadInsights() {
   const taVotes = Object.values(ta.ratings).map((r: any) => ({ function: 'lens-review', role: 'ta', vote: r.vote }));
   return computeInsights([...real, ...sampleClass], [...sampleVotes, ...studentVotes, ...taVotes].filter(v => v.vote));
 }
-function Bar({ name, value }: { name: string; value: number | null }) {
-  return <div className="rubric"><div><span>{name}</span><strong>{pct(value)}</strong></div><div className="track"><span style={{width:(value||0)*100+'%'}}/></div></div>;
+// "Concept Match: lists & sets" reads as "Concept Match, lists and sets".
+const source = (g: any) => `${g.title.replace(': ', ', ').replace(' & ', ' and ')}, ${g.lens}`;
+function Bars({ title, rows }: { title: string; rows: { name: string; value: number | null }[] }) {
+  return <section className="card insight-card"><h2 className="section-title-lg">{title}</h2>
+    {rows.map((r, i) => <div className="skill-row" key={r.name}><div className="skill-row-head"><span>{r.name}</span>{r.value == null ? <span className="muted-text">No answers yet</span> : <span className={'skill-value' + (r.value < 0.5 ? ' low' : '')}>{pct(r.value)}</span>}</div><ScoreBar value={r.value} delay={0.1 * i}/></div>)}
+  </section>;
 }
 function ClassInsights() {
   const data = loadInsights() as any;
-  return <div className="ta-page insights-page">
-    <h1>Class Insights</h1>
-    <p className="ta-intro">Last 30 days · CS1010E <span className="simulated-label">Sample class data</span></p>
-    <div className="stat-grid insights-stats">
-      <article><span>Students active</span><strong>{data.activeStudents}</strong></article>
-      <article><span>Practice attempts</span><strong>{data.attempts}</strong></article>
-      <article><span>Started from Skill Map</span><strong>{pct(data.fromSuggestionShare)}</strong></article>
-      <article><span>Students to support</span><strong>{data.toSupport.length}</strong></article>
+  return <>
+    <div><h1 className="page-title">Class Insights</h1><p className="page-lede">CS1010E, last 30 days. <span className="chip">Sample class data</span></p></div>
+    <dl className="stat-row">
+      <div><dt>Students active</dt><dd>{data.activeStudents}</dd></div>
+      <div><dt>Practice attempts</dt><dd>{data.attempts}</dd></div>
+      <div><dt>Started from the Skill map</dt><dd>{pct(data.fromSuggestionShare)}</dd></div>
+      <div className={data.toSupport.length ? 'warn' : ''}><dt>Students to support</dt><dd>{data.toSupport.length}</dd></div>
+    </dl>
+    <section aria-labelledby="support-title" className="insight-section">
+      <div><h2 id="support-title" className="section-title-lg">Students to support</h2><p className="muted-text">Under 50% in at least one lens.</p></div>
+      {data.toSupport.length ? <div className="table-wrap"><table className="ta-table2">
+        <thead><tr><th scope="col">Student</th><th scope="col">Weakest lens</th><th scope="col">Pattern</th><th scope="col">Attempts</th><th scope="col">Last active</th></tr></thead>
+        <tbody>{data.toSupport.map((s: any) => <tr key={s.student} className="row-hover"><td><strong>{s.student}</strong></td><td>{s.weakest} <span className="chip warn small">{pct(s.score)}</span></td><td>{s.patterns.join(', ')}</td><td className="num">{s.attempts}</td><td className="nowrap">{shortDate(s.lastActive)}</td></tr>)}</tbody>
+      </table></div> : <p className="muted-text">Nobody is under 50% in a lens right now.</p>}
+    </section>
+    <section aria-labelledby="gaps-title" className="insight-section">
+      <div><h2 id="gaps-title" className="section-title-lg">Common gaps</h2><p className="muted-text">Most-missed issues and most-chosen wrong answers.</p></div>
+      <ul className="gap-list">{data.gaps.map((g: any) => <li key={g.key}>
+        <span className="gap-text"><strong>{g.detail}</strong><span>{source(g)}</span></span>
+        <span className="gap-count"><span className="bar"><span className="warn" style={{ width: g.count / g.of * 100 + '%' }}/></span><span>{g.count} of {g.of}</span></span>
+      </li>)}</ul>
+    </section>
+    <div className="insight-grid">
+      <Bars title="Class average by practice mode" rows={(practiceFunctions as string[]).map(fn => ({ name: (functionNames as any)[fn], value: data.byFunction[fn] }))}/>
+      <Bars title="Class average by lens" rows={dimensions.map(lens => ({ name: lens, value: data.byLens[lens] }))}/>
     </div>
-    <div className="insights-grid">
-      <section className="progress-card"><h2>By function</h2>{(practiceFunctions as string[]).map(fn=><Bar key={fn} name={(functionNames as any)[fn]} value={data.byFunction[fn]}/>)}</section>
-      <section className="progress-card"><h2>By lens</h2>{dimensions.map(lens=><Bar key={lens} name={lens} value={data.byLens[lens]}/>)}</section>
-    </div>
-    <section className="progress-card"><h2>Common gaps</h2><p className="muted">Most-missed issues and most-chosen wrong answers.</p>
-      <ul className="insights-gaps">{data.gaps.map((g: any)=><li key={g.key}><div><strong>{g.detail}</strong><small>{g.title} · {g.lens}</small></div><b>{g.count} of {g.of}</b></li>)}</ul>
+    <section aria-labelledby="ai-title" className="insight-section">
+      <div><h2 id="ai-title" className="section-title-lg">AI feedback quality</h2><p className="muted-text">How often students and TAs rated the AI feedback as helpful.</p></div>
+      <div className="table-wrap"><table className="ta-table2">
+        <thead><tr><th scope="col">Practice mode</th><th scope="col">Students</th><th scope="col">TAs</th></tr></thead>
+        <tbody>{(practiceFunctions as string[]).map(fn => <tr key={fn}><td><strong>{(functionNames as any)[fn]}</strong></td>{(['student', 'ta'] as const).map(role => { const q = data.quality[fn][role]; return <td key={role}>{q.share == null ? <span className="muted-text">No ratings yet</span> : <><strong>{pct(q.share)} helpful</strong> <span className="muted-text">({q.up} of {q.up + q.down})</span></>}</td>; })}</tr>)}</tbody>
+      </table></div>
     </section>
-    <section className="progress-card"><h2>Students to support</h2><p className="muted">Under 50% in a lens.</p>
-      <div className="ta-table-scroll"><table className="ta-table"><thead><tr><th>Student</th><th>Weakest lens</th><th>Pattern</th><th>Attempts</th><th>Last active</th></tr></thead>
-        <tbody>{data.toSupport.map((s: any)=><tr key={s.student}><td><strong>{s.student}</strong></td><td>{s.weakest} ({pct(s.score)})</td><td>{s.patterns.map((p: string)=><span className="queue-flag" key={p}>{p}</span>)}</td><td>{s.attempts}</td><td>{new Date(s.lastActive).toLocaleDateString()}</td></tr>)}</tbody></table></div>
-    </section>
-    <section className="progress-card"><h2>AI feedback quality</h2><p className="muted">Share of 👍 in every rating.</p>
-      <div className="ta-table-scroll"><table className="ta-table"><thead><tr><th>Function</th><th>Students</th><th>TAs</th></tr></thead>
-        <tbody>{(practiceFunctions as string[]).map(fn=><tr key={fn}><td><strong>{(functionNames as any)[fn]}</strong></td>{(['student','ta'] as const).map(role=>{const q=data.quality[fn][role];return <td key={role}>{pct(q.share)} {q.share!=null&&<small className="muted">({q.up} 👍 · {q.down} 👎)</small>}</td>;})}</tr>)}</tbody></table></div>
-    </section>
-  </div>;
+    <p className="cl-demo-note">Combines a sample class of eight with this browser’s attempts.</p>
+  </>;
 }
 const feature: Feature = { id: 'class-insights', role: 'ta', kind: 'page', order: 22, label: 'Class Insights', navIcon: InsightsIcon, Screen: ClassInsights };
 export default feature;

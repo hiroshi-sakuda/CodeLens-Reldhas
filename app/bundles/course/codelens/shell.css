@@ -57,3 +57,13 @@
   .topnav{margin-left:0;order:3;width:100%}
   .page-title{font-size:27px}
 }
+
+/* Shared page text and score rows */
+.page-lede{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 0;color:var(--ink-soft)}
+.muted-text{margin:0;font-size:13px;font-weight:400;color:var(--ink-faint)}
+.skill-row-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600}
+.skill-row-head .muted-text{margin-left:6px}
+.skill-value{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.skill-value.low{color:var(--amber-strong)}
+.btn-xs{min-height:36px;padding:0 14px;font-size:13.5px}
+.skill-row{display:flex;flex-direction:column;gap:6px}

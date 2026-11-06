@@ -23,11 +23,11 @@ test('confidence is low for a comment that misses the point or a long off-key on
   assert.equal(confidenceOf(seats,[{...good,start:1,end:1,text:'word '.repeat(30)}]),'low');
 });
 test('queue order: waiting, more flags, then newest',()=>{
-  const q=buildQueue([sub('old','2026-01-01'),sub('new','2026-02-01'),sub('flag','2026-01-02',{studentVote:'down'}),sub('done','2026-03-01')],[{attemptId:'done',sentAt:'x',createdAt:'x'}],[],exercises);
+  const q=buildQueue([sub('old','2026-01-01'),sub('new','2026-02-01'),sub('flag','2026-01-02',{studentVote:'down'}),sub('done','2026-03-01')],[{attemptId:'done',sentAt:'x',createdAt:'x'}],exercises);
   assert.deepEqual(q.map(i=>i.submission.id),['flag','new','old','done']);
   assert.deepEqual(queueCounts(q),{waiting:3,flagged:1});
 });
-test('watched students are flagged',()=>assert.ok(buildQueue([sub('a','2026-01-01')],[],['a'],exercises)[0].flags.includes('watching')));
+test('a student who disagreed with the AI is flagged',()=>assert.deepEqual(buildQueue([sub('a','2026-01-01',{studentVote:'down'})],[],exercises)[0].flags,['student-down']));
 test('a review records approved or edited',()=>{
   const base={attemptId:'a',originalSummary:'s',originalScore:5};
   assert.equal(makeReview({...base,action:'send',summary:'s',score:5}).action,'approved');

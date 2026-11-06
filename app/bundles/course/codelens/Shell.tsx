@@ -75,7 +75,7 @@ function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; 
     <TopBar role={role} routeId={route.id} go={go} onRole={onRole}/>
     <main className="sheet page"><div className="page-inner">
       {feature ? <feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/> : <StudentHome {...screenProps}/>}
-      <p className="cl-demo-note">Demo with sample exercises and simulated grading. Progress is saved in this browser.</p>
+      {feature?.role !== 'ta' && <p className="cl-demo-note">Demo with sample exercises and simulated grading. Progress is saved in this browser.</p>}
     </div></main>
   </div>;
 }

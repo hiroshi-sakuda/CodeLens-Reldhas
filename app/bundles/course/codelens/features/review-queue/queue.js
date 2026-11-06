@@ -1,5 +1,5 @@
 import { normalizeComment } from '../../model.js';
-export const flagLabels = { 'low-confidence': 'Low AI confidence', 'student-down': 'Student 👎', watching: 'Watching' };
+export const flagLabels = { 'low-confidence': 'Low AI confidence', 'student-down': 'Student disagreed' };
 export const statusLabels = { waiting: 'Waiting', sent: 'Sent', skipped: 'Skipped' };
 // Sent wins over skipped: once anything was sent, the student has TA feedback.
 export function statusOf(reviews) {
@@ -20,14 +20,13 @@ export function confidenceOf(exercise, comments) {
   });
   return low ? 'low' : 'high';
 }
-export function buildQueue(submissions, reviews, watching, exercises) {
+export function buildQueue(submissions, reviews, exercises) {
   const items = submissions.map(submission => {
     const mine = reviews.filter(r => r.attemptId === submission.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     const exercise = exercises.find(e => e.id === submission.exercise);
     const flags = [];
     if (exercise && confidenceOf(exercise, submission.comments) === 'low') flags.push('low-confidence');
     if (submission.studentVote === 'down') flags.push('student-down');
-    if (watching.includes(submission.student)) flags.push('watching');
     return { submission, exercise, flags, status: statusOf(mine), reviews: mine };
   });
   const rank = item => item.status === 'waiting' ? 0 : item.status === 'skipped' ? 1 : 2;

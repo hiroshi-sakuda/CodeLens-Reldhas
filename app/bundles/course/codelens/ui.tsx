@@ -11,7 +11,7 @@ export const shortDate = (iso: string) => new Date(iso).toLocaleDateString([], {
 // soft: a word like Not quite stays amber; red is only for a zero score.
 export function ResultChip({ value, children, soft = false, className = '' }: { value: number | null; children: ReactNode; soft?: boolean; className?: string }) {
   const tone = value == null ? '' : value >= 0.75 ? 'good' : value > 0 || soft ? 'warn' : 'bad';
-  return <span className={`chip score ${tone} ${className}`}>{children}</span>;
+  return <span className={`chip chip-score ${tone} ${className}`}>{children}</span>;
 }
 
 export function ScoreBar({ value, delay = 0 }: { value: number | null; delay?: number }) {
