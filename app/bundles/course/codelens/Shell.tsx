@@ -25,10 +25,11 @@ function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; 
   return <div className="app-shell"><div className="main-shell">
     <header className="topbar">
       <nav className="breadcrumb-nav shell-nav" aria-label="Main">
-        <span className="breadcrumb">CodeLens</span><ChevronRight size={14}/>
-        {role==='ta'?pages.map(p=><button key={p.id} className={'menu-item'+(route.id===p.id?' current':'')} onClick={()=>go(p.id)}>{p.label}</button>):feature?<><button onClick={()=>go('home')}>Practice</button><ChevronRight size={14}/><span aria-current="page">{feature.label}</span></>:<span aria-current="page">Practice</span>}
+        <span className="breadcrumb">CodeLens</span>
+        {role==='ta'?<div className="ta-tabs">{pages.map(p=><button key={p.id} className={route.id===p.id?'current':''} aria-current={route.id===p.id?'page':undefined} onClick={()=>go(p.id)}>{p.label}</button>)}</div>:<><ChevronRight size={14}/>{feature?<><button onClick={()=>go('home')}>Practice</button><ChevronRight size={14}/><span aria-current="page">{feature.label}</span></>:<span aria-current="page">Practice</span>}</>}
       </nav>
       <div className="topbar-actions">
+        {role==='student'&&pages.map(p=><button key={p.id} className={'header-link'+(route.id===p.id?' current':'')} onClick={()=>go(p.id)}>{p.label}</button>)}
         {feature?.help&&<button className="icon-button" aria-label="How it works" onClick={()=>setShowHelp(true)}><CircleHelp size={17}/></button>}
         {features.some(f=>f.role==='ta')&&(role==='ta'||!feature)&&<div className="role-switch" role="group" aria-label="View as"><button aria-pressed={role==='student'} onClick={()=>onRole('student')}>Student</button><button aria-pressed={role==='ta'} onClick={()=>onRole('ta')}>TA</button></div>}
         <button className="theme-toggle" onClick={()=>setTheme(theme==='dark'?'light':'dark')} aria-label={theme==='dark'?'Switch to light mode':'Switch to dark mode'} title={theme==='dark'?'Switch to light mode':'Switch to dark mode'}>{theme==='dark'?<Sun size={16}/>:<Moon size={16}/>}<span>{theme==='dark'?'Light mode':'Dark mode'}</span></button>
@@ -46,6 +47,7 @@ export default function Shell() {
   const [route, setRoute] = useState<Route>({ id: 'home', params: {} });
   const [role, setRole] = useState<Role>('student');
   const go: Go = (id, params = {}) => { setRoute({ id, params }); window.scrollTo({ top: 0 }); };
-  if (route.id === 'lens-review') return <App onHome={() => go('home')}/>;
+  const studentPage = features.find(f => f.role === 'student' && f.kind === 'page');
+  if (route.id === 'lens-review') return <App onHome={() => go('home')} extraLink={studentPage && { label: studentPage.label, onClick: () => go(studentPage.id) }}/>;
   return <Frame route={route} role={role} go={go} onRole={next => { setRole(next); go(next === 'ta' ? taHome() : 'home'); }}/>;
 }

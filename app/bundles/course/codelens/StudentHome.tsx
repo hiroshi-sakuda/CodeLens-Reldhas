@@ -18,7 +18,7 @@ export default function StudentHome(props: ScreenProps) {
   const practice = features.filter(f => f.kind === 'practice');
   const unfinished = listAttempts().filter((a: any) => a.status === 'in_progress');
   return <div className="student-home">
-    <div className="home-heading"><h1>What do you want to practise today?</h1>{features.filter(f => f.role === 'student' && f.kind === 'page').map(f => <button className="secondary" key={f.id} onClick={()=>props.go(f.id)}>{f.label}<ArrowRight size={16}/></button>)}</div>
+    <div className="home-heading"><h1>What do you want to practise today?</h1></div>
     <div className="practice-cards">
       {practice.map(f => <Card key={f.id} id={f.id} name={f.label} card={f.card!} go={props.go}/>)}
       <Card id="lens-review" name="Lens Review" card={lensReviewCard} go={props.go}/>

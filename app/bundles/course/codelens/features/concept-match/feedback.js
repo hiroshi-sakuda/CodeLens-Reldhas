@@ -20,7 +20,20 @@ export function questionFeedback(question, choice, reason) {
   else if (reasonRating === 'good') comment = `You wrote “${quote}”: that's the right idea. Which option actually does that?`;
   else if (correct) comment = `Right choice. Your reason, “${quote}”, could say more: what in the story makes this concept the best fit?`;
   else comment = `You wrote “${quote}”. What does the story need most, and which option gives it?`;
-  return { questionId: question.id, correct, correctOption: question.correct, chosen: choice, reasonRating, comment };
+  const good = [], improve = [];
+  const chosen = question.options.find(o => o.id === choice);
+  if (correct) good.push(`You chose the right concept: ${chosen.text}.`);
+  else if (chosen) improve.push(`${chosen.text} isn't the best fit here. What does the story need most?`);
+  if (reasonRating === 'good') good.push(correct ? `Your reason “${quote}” names what the story needs.` : `Your reason “${quote}” is on the right track.`);
+  else if (reasonRating === 'partly') improve.push(`Your reason “${quote}” could say what in the story makes this concept fit.`);
+  else improve.push(comment);
+  return { questionId: question.id, correct, correctOption: question.correct, chosen: choice, reasonRating, comment, good, improve };
+}
+// Demo answers: the right option with a reason that names what the story needs, or a wrong option with a vague reason.
+export function demoAnswer(question, kind) {
+  if (kind === 'wrong') return { choice: question.options.find(o => o.id !== question.correct).id, reason: 'I just guessed.' };
+  const first = sentences(question.options.find(o => o.id === question.correct).why)[0];
+  return { choice: question.correct, reason: hasAny(first, question.reasonSignals) ? first : `It needs a ${question.reasonSignals[0]}.` };
 }
 export function setFeedback(questions, choices, reasons) {
   const items = questions.map(q => questionFeedback(q, choices[q.id] ?? null, reasons[q.id] ?? ''));

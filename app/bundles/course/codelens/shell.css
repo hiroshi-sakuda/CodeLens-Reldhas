@@ -1,5 +1,7 @@
 main.shell-page{max-width:1100px}
-.shell-nav .menu-item{color:var(--palette-94a1a7)}.shell-nav .menu-item.current{color:var(--palette-b6dc92);font-weight:600}
+.ta-tabs{display:flex;gap:4px;margin-left:12px;padding-left:16px;border-left:1px solid var(--palette-343b3e)}.shell-nav .ta-tabs button{padding:7px 10px;border-radius:5px;color:var(--palette-94a1a7)}.shell-nav .ta-tabs button:hover{background:var(--palette-252e30);text-decoration:none}.shell-nav .ta-tabs button.current{background:var(--palette-293328);color:var(--palette-b6dc92);font-weight:600}
+.topbar-actions .header-link.current{color:var(--palette-b6dc92);font-weight:600}
+@media(max-width:600px){.ta-tabs{margin-left:0;padding-left:0;border-left:0;flex-wrap:wrap}}
 .role-switch{display:flex;border:1px solid var(--palette-343b3e);border-radius:5px;overflow:hidden}.role-switch button{border:0;padding:7px 10px;font-size:10px;background:var(--palette-1b2023)}.role-switch button[aria-pressed=true]{background:var(--palette-293328);color:var(--palette-b6dc92)}
 .home-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:18px 0 24px}.student-home h1{font-size:30px;letter-spacing:-.8px;margin:0}.home-heading .secondary{flex-shrink:0}.home-panels{margin-top:16px}.home-panels:empty{display:none}
 .practice-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}

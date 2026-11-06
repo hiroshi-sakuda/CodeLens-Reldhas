@@ -13,3 +13,4 @@
 .result-dot{display:flex;align-items:center;justify-content:center;width:28px;height:28px;flex-shrink:0;border-radius:50%}.result-dot.right{background:var(--palette-293328);color:var(--palette-b6dc92)}.result-dot.wrong{background:var(--palette-2c2a21);color:var(--palette-d7af79)}
 .submission-bar>.secondary{flex-shrink:0}
 @media(max-width:600px){.concept-question{padding:18px}.concept-story{font-size:14px}.set-dots{margin-left:0;width:100%}}
+.first-points{margin-top:18px}
