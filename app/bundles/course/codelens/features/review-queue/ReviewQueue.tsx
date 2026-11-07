@@ -117,7 +117,7 @@ export function TaReview({ params, go }: ScreenProps) {
             <h3 id="key-title" className="small-title">Answer key</h3>
             {exercise.findings.length ? exercise.findings.map((f: any, i: number) => <p key={i} className="key-row"><span className="lines">{linesLabel(f.start, f.end)}</span><span className="lens-tag">{f.dimension}</span><span>{f.claim}</span></p>) : <p>This code has no planted issues.</p>}
           </section>
-          {item.reviews.length > 0 && <section className="feedback-block"><h3 className="small-title">Earlier</h3>{item.reviews.map((r: any) => <p key={r.id} className="muted-text">{r.sentAt ? `Sent ${when(r.sentAt)}` : `Skipped ${when(r.createdAt)}`}{r.adjustedScore != null && `, your score ${r.adjustedScore} / 10`}{r.comment && `: “${r.comment}”`}</p>)}</section>}
+          {item.reviews.length > 0 && <section className="feedback-block"><h3 className="small-title">Earlier</h3>{item.reviews.map((r: any) => <p key={r.id} className="muted-text">{r.sentAt ? `Sent ${when(r.sentAt)}` : `Skipped ${when(r.createdAt)}`}{r.adjustedScore != null ? `, your score ${r.adjustedScore} / 10` : r.setsScore && ', AI score restored'}{r.comment && `: “${r.comment}”`}</p>)}</section>}
           <section aria-labelledby="yours-title" className="feedback-block ta-yours">
             <h2 id="yours-title" className="panel-title">Your review</h2>
             <fieldset className="helpful"><legend>Was the AI feedback right?</legend>

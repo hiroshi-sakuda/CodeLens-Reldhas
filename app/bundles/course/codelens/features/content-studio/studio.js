@@ -8,6 +8,8 @@ export function seedStatuses(library) {
   }
   return statuses;
 }
+// The IDs students get: Lens Review samples point at their exercise.
+export const approvedIds = (library, statuses) => Object.fromEntries(practiceFunctions.map(fn => [fn, library.filter(s => s.function === fn && statuses[s.id] === 'approved').map(s => s.exerciseId ?? s.id)]));
 export const approvedCounts = (library, statuses) => Object.fromEntries(practiceFunctions.map(fn => [fn, library.filter(s => s.function === fn && statuses[s.id] === 'approved').length]));
 // Generate reveals samples nobody has seen yet for this function and topic.
 export function nextSamples(library, statuses, fn, topicId, count = 2) {

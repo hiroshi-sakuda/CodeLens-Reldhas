@@ -1,4 +1,6 @@
 import { dimensions, exercises } from './model.js';
+import { approvedItems } from './course.js';
+const studentExercises = () => approvedItems('lens-review', exercises);
 
 export function eligibleExercises(topic, focus, bank = exercises) {
   if (!focus.length || focus.some(area => !dimensions.includes(area))) return [];
@@ -7,7 +9,7 @@ export function eligibleExercises(topic, focus, bank = exercises) {
 }
 
 // Choose once at the start of an attempt; never re-roll during rendering or reload.
-export function choosePractice(topic, focus, randomFocus, rng = Math.random, bank = exercises) {
+export function choosePractice(topic, focus, randomFocus, rng = Math.random, bank = studentExercises()) {
   const available = bank.filter(exercise => topic === 'Random' || exercise.topic === topic);
   const candidates = randomFocus ? available : eligibleExercises(topic, focus, bank);
   if (!candidates.length) throw new Error('No sample exercises match this topic and focus. Choose another combination.');
@@ -31,6 +33,6 @@ export function submissionError(draft, hasOpenAnnotation = false) {
 }
 
 export function nextPractice(currentId, focus, randomFocus, rng = Math.random) {
-  const remaining = exercises.filter(exercise => exercise.id !== currentId);
+  const remaining = studentExercises().filter(exercise => exercise.id !== currentId);
   return choosePractice('Random', focus, randomFocus, rng, remaining);
 }

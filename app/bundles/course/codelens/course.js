@@ -24,6 +24,13 @@ export function isUnlocked(fn, course = readCourse()) {
   return !course.approved || (course.approved[fn] || 0) >= course.examplesRequired;
 }
 
+// Once a TA has used Content Studio, students only get the exercises approved there.
+export function approvedItems(fn, items, course = readCourse()) {
+  if (!course.approvedIds) return items;
+  const ids = course.approvedIds[fn] || [];
+  return items.filter(item => ids.includes(item.id));
+}
+
 // Choose among published topics at this difficulty, preferring what this student hasn't done.
 export function eligibleItems(items, difficulty, published) {
   return items.filter(item => item.difficulty === difficulty && published.includes(item.topicId));

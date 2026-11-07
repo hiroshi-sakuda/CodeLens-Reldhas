@@ -32,7 +32,8 @@ export const exampleTaFeedback = { 'sub-tom': "Good instinct to check the order.
 function realSubmissions() {
   const { attempts, drafts } = lensReviewData();
   return attempts.map(a => {
-    const draft = Object.values(drafts).find(d => d.submitted && (d.exerciseId === a.exercise));
+    // Drafts record their attempt; older ones without it fall back to the same exercise.
+    const draft = Object.values(drafts).find(d => d.submitted && d.attemptId === a.id) || Object.values(drafts).find(d => d.submitted && !d.attemptId && d.exerciseId === a.exercise);
     return { id: a.id, student: demoStudent, exercise: a.exercise, date: a.date, comments: a.comments, result: a.result, noIssues: !!a.noIssues, justification: a.justification || '', studentVote: draft?.ratings?.feedback?.vote || null };
   });
 }

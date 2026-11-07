@@ -2,10 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { exercises } from '../app/bundles/course/codelens/model.js';
 import { buildQueue, confidenceOf, makeReview, queueCounts, statusOf, taFeedbackFor } from '../app/bundles/course/codelens/features/review-queue/queue.js';
-import { sampleReviews, sampleSubmissions } from '../app/bundles/course/codelens/features/review-queue/submissions.js';
+import { allSubmissions, sampleReviews, sampleSubmissions } from '../app/bundles/course/codelens/features/review-queue/submissions.js';
+import { approvedItems, defaultCourse } from '../app/bundles/course/codelens/course.js';
+import { reviewedScore } from '../app/bundles/course/codelens/attempt-summary.js';
 import { commonGaps, computeInsights, feedbackQuality } from '../app/bundles/course/codelens/features/class-insights/insights.js';
 import { sampleClass, sampleVotes } from '../app/bundles/course/codelens/features/class-insights/sample-class.js';
-import { approvedCounts, nextSamples, regenerate, seedStatuses, validRequired } from '../app/bundles/course/codelens/features/content-studio/studio.js';
+import { approvedCounts, approvedIds, nextSamples, regenerate, seedStatuses, validRequired } from '../app/bundles/course/codelens/features/content-studio/studio.js';
 const seats = exercises.find(e => e.id === 'seats');
 const good = { id: 'c', lenses: ['Efficiency'], start: 6, end: 9, text: 'The nested loop scans it. Slow', fix: 'Set' };
 const sub = (id, date, extra = {}) => ({ id, student: id, exercise: 'seats', date, comments: [good], ...extra });
@@ -74,3 +76,33 @@ test('regenerate replaces a sample, or says none are left',()=>{
   assert.equal(regenerate(library,{...s,d5:'pending',d6:'pending'},library[3]),null);
 });
 test('examples required stays in range',()=>{assert.ok(validRequired(3));assert.equal(validRequired(0),false);assert.equal(validRequired(2.5),false);});
+test('setting the score back to the AI score wins over an earlier change',()=>{
+  const base={attemptId:'a',originalSummary:'AI',originalScore:5};
+  const first=makeReview({...base,action:'send',summary:null,score:8,now:'1'});
+  const back=makeReview({...base,action:'send',summary:null,score:5,now:'2'});
+  assert.equal(back.adjustedScore,null);assert.ok(back.setsScore);assert.equal(back.setsSummary,false);
+  assert.equal(taFeedbackFor([first,back]).adjustedScore,null);
+  // A later send with the score left empty keeps the latest decision.
+  const comment=makeReview({...base,action:'send',summary:null,score:null,comment:'Nice',now:'3'});
+  assert.equal(taFeedbackFor([first,comment]).adjustedScore,8);
+  assert.equal(taFeedbackFor([first,back,comment]).adjustedScore,null);
+  assert.equal(reviewedScore([first,back],'a'),null);
+});
+test('students only get approved exercises once Content Studio is used',()=>{
+  const lib=[{id:'q1',function:'dry-run'},{id:'q2',function:'dry-run'},{id:'q3',function:'dry-run'},{id:'lr-seats',exerciseId:'seats',function:'lens-review'}];
+  const ids=approvedIds(lib,{q1:'approved',q2:'rejected',q3:'pending','lr-seats':'approved'});
+  assert.deepEqual(ids['dry-run'],['q1']);assert.deepEqual(ids['lens-review'],['seats']);
+  const bank=[{id:'q1'},{id:'q2'},{id:'q3'},{id:'q4'}];
+  assert.deepEqual(approvedItems('dry-run',bank,{...defaultCourse(),approvedIds:ids}).map(q=>q.id),['q1']);
+  assert.equal(approvedItems('dry-run',bank,defaultCourse()).length,4);
+});
+test('a submission takes the student vote from its own attempt',()=>{
+  const store={'codelens-demo-v1':JSON.stringify({
+    attempts:[{id:'one',exercise:'seats',date:'2026-11-01',comments:[],result:{total:5}},{id:'two',exercise:'seats',date:'2026-11-02',comments:[],result:{total:5}}],
+    drafts:{d1:{submitted:true,exerciseId:'seats',attemptId:'one',ratings:{feedback:{vote:'up'}}},d2:{submitted:true,exerciseId:'seats',attemptId:'two',ratings:{feedback:{vote:'down'}}}}})};
+  globalThis.localStorage={getItem:k=>store[k]??null,setItem(){}};
+  try {
+    const real=allSubmissions().filter(s=>s.id==='one'||s.id==='two');
+    assert.deepEqual(real.map(s=>[s.id,s.studentVote]),[['one','up'],['two','down']]);
+  } finally { delete globalThis.localStorage; }
+});

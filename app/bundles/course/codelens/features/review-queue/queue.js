@@ -1,4 +1,5 @@
 import { normalizeComment } from '../../model.js';
+import { decides } from '../../attempt-summary.js';
 export const flagLabels = { 'low-confidence': 'Low AI confidence', 'student-down': 'Student disagreed' };
 export const statusLabels = { waiting: 'Waiting', sent: 'Sent', skipped: 'Skipped' };
 // Sent wins over skipped: once anything was sent, the student has TA feedback.
@@ -40,12 +41,15 @@ export function queueCounts(items) {
 export function taFeedbackFor(reviews) {
   const sent = reviews.filter(r => r.sentAt).sort((a, b) => a.sentAt.localeCompare(b.sentAt));
   const latest = [...sent].reverse();
-  return { sent, editedSummary: latest.find(r => r.editedSummary)?.editedSummary ?? null, adjustedScore: latest.find(r => r.adjustedScore != null)?.adjustedScore ?? null, comments: sent.filter(r => r.comment).map(r => r.comment) };
+  return { sent, editedSummary: latest.find(r => decides(r, 'editedSummary'))?.editedSummary ?? null, adjustedScore: latest.find(r => decides(r, 'adjustedScore'))?.adjustedScore ?? null, comments: sent.filter(r => r.comment).map(r => r.comment) };
 }
+// summary and score are null when the TA left them alone. A value equal to the AI's is
+// still a decision (setsSummary/setsScore): it puts back the AI's version after an earlier edit.
 export function makeReview({ attemptId, action, summary, originalSummary, score, originalScore, comment, now = new Date().toISOString() }) {
   const editedSummary = action === 'send' && summary?.trim() && summary.trim() !== originalSummary ? summary.trim() : null;
   const adjustedScore = action === 'send' && score != null && score !== originalScore ? score : null;
-  return { id: crypto.randomUUID(), attemptId, action: action === 'skip' ? 'skipped' : editedSummary || adjustedScore != null ? 'edited' : 'approved', editedSummary, adjustedScore, comment: action === 'send' && comment?.trim() ? comment.trim() : null, sentAt: action === 'send' ? now : null, createdAt: now };
+  const setsSummary = action === 'send' && !!summary?.trim(), setsScore = action === 'send' && score != null;
+  return { id: crypto.randomUUID(), attemptId, action: action === 'skip' ? 'skipped' : editedSummary || adjustedScore != null ? 'edited' : 'approved', editedSummary, adjustedScore, setsSummary, setsScore, comment: action === 'send' && comment?.trim() ? comment.trim() : null, sentAt: action === 'send' ? now : null, createdAt: now };
 }
 export function aiSummary(exercise, result, noIssues) {
   if (!exercise.findings.length) return noIssues ? 'Correct conclusion: this code has no issues.' : 'This code has no issues, so the comments were not needed.';

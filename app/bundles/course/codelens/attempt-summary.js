@@ -2,7 +2,9 @@ import { exercises, findingFound, normalizeComment } from './model.js';
 import { functionNames } from './course.js';
 // One shape for every kind of attempt, so the Skill Map and TA screens read them the same way.
 // items: what each answer scored per lens, value 0 to 1. source: 'exam' or 'review'.
-export const reviewedScore = (reviews, id) => reviews.filter(r => r.attemptId === id && r.sentAt && r.adjustedScore != null).at(-1)?.adjustedScore;
+// A sent review decides a value when it changed it, or put it back to the AI's (setsScore/setsSummary with null).
+export const decides = (review, field) => !!review.sentAt && (review[field] != null || !!review[field === 'adjustedScore' ? 'setsScore' : 'setsSummary']);
+export const reviewedScore = (reviews, id) => reviews.filter(r => r.attemptId === id && decides(r, 'adjustedScore')).at(-1)?.adjustedScore;
 
 export function lensReviewItems(attempt, bank = exercises) {
   const exercise = bank.find(e => e.id === attempt.exercise);

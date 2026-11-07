@@ -4,7 +4,7 @@ import AnswerFeedback from '../../AnswerFeedback';
 import { SlimBar } from '../../bars';
 import DifficultySetup, { type Difficulty } from '../../DifficultySetup';
 import type { ScreenProps } from '../../features';
-import { eligibleItems, pickItems, readCourse, topicName } from '../../course.js';
+import { approvedItems, eligibleItems, pickItems, readCourse, topicName } from '../../course.js';
 import { Brackets, CheckIcon, SparkIcon } from '../../icons';
 import { createAttempt, getAttempt, listAttempts, updateAttempt } from '../../practice-log.js';
 import DemoFill from '../../DemoFill';
@@ -23,8 +23,8 @@ export default function ConceptMatchScreen({ params, go }: ScreenProps) {
   const [error, setError] = useState('');
   function start(difficulty: Difficulty) {
     const done = listAttempts('concept-match').flatMap((a: any) => a.exerciseIds);
-    const picked = pickItems(eligibleItems(library, difficulty, readCourse().publishedTopics), setSize, done);
-    if (!picked.length) { setError('Your TA is preparing this: no topics are published yet.'); return; }
+    const picked = pickItems(eligibleItems(approvedItems('concept-match', library), difficulty, readCourse().publishedTopics), setSize, done);
+    if (!picked.length) { setError('Your TA is preparing this: nothing is approved and published at this difficulty yet.'); return; }
     setAttemptId(createAttempt({ function: 'concept-match', title: `Set of ${picked.length} questions`, difficulty, topicId: null, exerciseIds: picked.map((q: any) => q.id), answers: { choices: {}, reasons: {}, checked: [] }, fromSuggestion: !!params.fromSuggestion }).id);
   }
   if (error) return <><SlimBar title="Concept Match" onExit={() => go('home')} leave={null}/><section className="sheet center-sheet"><p>{error}</p><button className="btn btn-outline" onClick={() => go('home')}>Back to Practice</button></section></>;
