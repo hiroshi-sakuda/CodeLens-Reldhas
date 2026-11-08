@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { ChevronRight, X } from 'lucide-react';
 import AnswerFeedback from '../../AnswerFeedback';
 import { SlimBar } from '../../bars';
-import DifficultySetup, { type Difficulty } from '../../DifficultySetup';
+import GeneratingScreen, { type Difficulty } from '../../GeneratingScreen';
 import type { ScreenProps } from '../../features';
-import { approvedItems, eligibleItems, pickItems, readCourse, topicName } from '../../course.js';
+import { approvedItems, eligibleForTopic, pickItems, readCourse, topicName } from '../../course.js';
 import { Brackets, CheckIcon, SparkIcon } from '../../icons';
 import { createAttempt, getAttempt, listAttempts, updateAttempt } from '../../practice-log.js';
 import DemoFill from '../../DemoFill';
@@ -13,7 +13,6 @@ import { demoAnswer, questionFeedback, setFeedback } from './feedback.js';
 import { questions as library } from './questions.js';
 import './concept-match.css';
 export const help = { title: 'How Concept Match works', steps: ['Read the story. Each set has 5.', 'Pick the concept that fits it best and say why in one line.', 'Check your answer. It locks and the feedback explains every option.', 'Finish the set to see your results.'] };
-const levels = { easy: 'Clear story; wrong options are clearly unsuitable.', medium: 'Two plausible options to choose between.', hard: 'Several plausible options that differ in one requirement.' };
 const reasonLabel = { good: 'Good reason', partly: 'Could say more', missing: 'No reason given' };
 const summaryStep = -1;
 const setSize = 5;
@@ -23,12 +22,12 @@ export default function ConceptMatchScreen({ params, go }: ScreenProps) {
   const [error, setError] = useState('');
   function start(difficulty: Difficulty) {
     const done = listAttempts('concept-match').flatMap((a: any) => a.exerciseIds);
-    const picked = pickItems(eligibleItems(approvedItems('concept-match', library), difficulty, readCourse().publishedTopics), setSize, done);
+    const picked = pickItems(eligibleForTopic(approvedItems('concept-match', library), difficulty, readCourse().publishedTopics, params.topicId), setSize, done);
     if (!picked.length) { setError('Your TA is preparing this: nothing is approved and published at this difficulty yet.'); return; }
-    setAttemptId(createAttempt({ function: 'concept-match', title: `Set of ${picked.length} questions`, difficulty, topicId: null, exerciseIds: picked.map((q: any) => q.id), answers: { choices: {}, reasons: {}, checked: [] }, fromSuggestion: !!params.fromSuggestion }).id);
+    setAttemptId(createAttempt({ function: 'concept-match', title: `Set of ${picked.length} questions`, difficulty, topicId: new Set(picked.map((q: any) => q.topicId)).size === 1 ? picked[0].topicId : null, exerciseIds: picked.map((q: any) => q.id), answers: { choices: {}, reasons: {}, checked: [] }, fromSuggestion: !!params.fromSuggestion }).id);
   }
   if (error) return <><SlimBar title="Concept Match" onExit={() => go('home')} leave={null}/><section className="sheet center-sheet"><p>{error}</p><button className="btn btn-outline" onClick={() => go('home')}>Back to Practice</button></section></>;
-  if (!attemptId) return <DifficultySetup title="Concept Match" what="a set of questions" levels={levels} help={help} autoStart={again || params.difficulty} onStart={start} onBack={() => go('home')}/>;
+  if (!attemptId) { const difficulty: Difficulty = again || params.difficulty || 'easy'; return <GeneratingScreen title="Concept Match" what="a set of questions" difficulty={difficulty} help={help} onDone={() => start(difficulty)} onBack={() => go('home')}/>; }
   return <QuestionSet key={attemptId} attemptId={attemptId} onHome={() => go('home')} onNewSet={() => { setAgain(getAttempt(attemptId).difficulty); setAttemptId(null); }}/>;
 }
 function QuestionSet({ attemptId, onHome, onNewSet }: { attemptId: string; onHome: () => void; onNewSet: () => void }) {

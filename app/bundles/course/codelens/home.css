@@ -12,15 +12,33 @@
 .practice-card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .practice-card2 h2{margin:0 0 4px;font-size:22px}
 .practice-card2 p{margin:0;color:var(--ink-soft)}
-.practice-card2 .slip-note{padding:10px 12px;border-radius:10px;background:var(--amber-bg);color:var(--amber-text);font-size:13.5px}
-:root[data-theme="dark"] .practice-card2 .slip-note{box-shadow:inset 0 0 0 1px var(--amber-edge)}
 .practice-score{margin-top:auto;display:flex;flex-direction:column;gap:8px}
 .practice-score>div:first-child{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--ink-soft)}
 .practice-score strong{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
 .practice-score strong.low{color:var(--amber-strong)}
-.practice-start{display:flex;flex-direction:column;gap:8px}
-.practice-setting{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--ink-faint)}
-.practice-setting .text-link{font-size:13px}
+.practice-start{display:flex;flex-direction:column;gap:10px;margin-top:auto}
+.practice-picks{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:8px}
+.practice-picks .field:only-child{grid-column:1/-1}
+.practice-picks .field{gap:4px;font-size:13px;font-weight:500;color:var(--ink-soft)}
+.practice-picks .field select{min-height:38px;padding:7px 10px;font-size:13.5px;color:var(--ink);cursor:pointer}
 .preparing-note{padding:12px;border-radius:var(--r-ctl);background:var(--ground);text-align:center;font-size:13.5px}
 .results-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .results-head .text-link{font-size:13.5px}
+
+/* Unfinished work: resume, see what is saved, or delete with undo */
+.continue-card{border-radius:14px;background:var(--ground)}
+.continue-head{display:flex;align-items:center;gap:2px;padding-right:6px}
+.continue-card .continue-row{flex:1;min-width:0;background:transparent}
+.continue-toggle svg{transition:transform var(--t-hover)}
+.continue-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+.continue-more{display:flex;flex-direction:column;gap:6px;padding:0 16px 14px 60px;font-size:14px;color:var(--ink-soft)}
+.continue-more p{margin:0}.continue-more ul{margin:0;padding-left:18px}
+.draft-undo{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink-soft)}
+
+/* The advice above the practice modes: what to work on, and one button */
+.focus-card{display:flex;flex-direction:column;gap:14px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--r-card)}
+.focus-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+.focus-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 32px;align-items:end}
+.focus-stat{display:flex;flex-direction:column;gap:6px}
+.focus-body .btn{justify-self:end;white-space:nowrap}
+@media(max-width:700px){.focus-body .btn{justify-self:stretch}}

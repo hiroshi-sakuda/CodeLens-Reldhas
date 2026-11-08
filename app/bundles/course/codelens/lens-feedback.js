@@ -1,6 +1,6 @@
 import { explainWords, lensPrecision, namesIssue, normalizeComment } from './model.js';
 // Lens Review feedback for each of the student's annotations. Follows the same rules as
-// assess() and never changes the score. Hints are questions, not corrected code.
+// assess() and never changes the score. Hints never show corrected code.
 const overlaps = (comment, finding) => comment.start <= finding.end && comment.end >= finding.start;
 const mentions = (text, words) => words.some(word => text.toLowerCase().includes(word));
 const lines = item => item.start === item.end ? `L${item.start}` : `L${item.start}–${item.end}`;
@@ -27,7 +27,7 @@ export function commentFeedback(exercise, raw) {
     points.push(`${lines(comment)} meets the requirements. What made you think there was a problem here?`);
   } else if (!hit.some(f => comment.lenses.includes(f.dimension))) {
     result = 'wrong-lens';
-    points.push(`You found the right place in the code (${lines(comment)}). Is this really about ${lens}? Which lens describes the problem better?`);
+    points.push(`Right lines (${lines(comment)}), but the issue here is about ${[...new Set(hit.map(f => f.dimension))].join(' and ')}, not ${comment.lenses.join(' or ')}.`);
   } else {
     result = 'unclear';
     points.push(`Right lines and the right lens (${lens}). What exactly goes wrong in these lines? Name the problem in one clear sentence.`);

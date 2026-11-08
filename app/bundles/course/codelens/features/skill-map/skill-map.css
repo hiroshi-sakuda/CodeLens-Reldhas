@@ -15,3 +15,21 @@ button.result-row{cursor:pointer}
 .result-text strong{font-weight:600}
 .result-text>span{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--ink-faint)}
 .result-text .chip.strong{padding:0 8px}
+
+.skill-score{display:inline-flex;align-items:baseline;gap:6px}
+.skill-key{margin-top:-12px}
+.topic-detail summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink-soft);width:fit-content}
+.topic-list{display:flex;flex-direction:column;gap:12px;margin-top:10px;padding:12px 14px;border-radius:var(--r-ctl);background:var(--ground)}
+.topic-list .skill-row-head{font-weight:500;font-size:14px}
+.topic-list .skill-value{font-size:14px}
+.trend{display:flex;flex-wrap:wrap;align-items:center;gap:12px 32px}
+.trend-chart{flex:3 1 340px;max-width:680px;height:auto;overflow:visible}
+.trend-side{flex:1 1 180px;display:flex;flex-direction:column;gap:4px}
+.trend-side strong{font-family:var(--font-title);font-size:26px;letter-spacing:-.4px;font-weight:600}
+.trend-grid{stroke:var(--line);stroke-width:1}
+.trend-axis{fill:var(--ink-faint);font-size:11px}
+.trend-value{fill:var(--ink);font-size:12px;font-weight:600}
+.trend-line{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.trend-dot{fill:var(--ink);stroke:var(--sheet);stroke-width:2}
+.trend-hit{fill:transparent}
+@media(max-width:600px){.trend-axis{font-size:16px}.trend-value{font-size:17px}}

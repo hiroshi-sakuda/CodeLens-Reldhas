@@ -1,4 +1,4 @@
-import { normalizeComment } from '../../model.js';
+import { findingFound, normalizeComment } from '../../model.js';
 import { decides } from '../../attempt-summary.js';
 export const flagLabels = { 'low-confidence': 'Low AI confidence', 'student-down': 'Student disagreed' };
 export const statusLabels = { waiting: 'Waiting', sent: 'Sent', skipped: 'Skipped' };
@@ -51,7 +51,8 @@ export function makeReview({ attemptId, action, summary, originalSummary, score,
   const setsSummary = action === 'send' && !!summary?.trim(), setsScore = action === 'send' && score != null;
   return { id: crypto.randomUUID(), attemptId, action: action === 'skip' ? 'skipped' : editedSummary || adjustedScore != null ? 'edited' : 'approved', editedSummary, adjustedScore, setsSummary, setsScore, comment: action === 'send' && comment?.trim() ? comment.trim() : null, sentAt: action === 'send' ? now : null, createdAt: now };
 }
-export function aiSummary(exercise, result, noIssues) {
+// Counted from the answer key, the same way the student sees it, also when live AI gave the score.
+export function aiSummary(exercise, comments, noIssues) {
   if (!exercise.findings.length) return noIssues ? 'Correct conclusion: this code has no issues.' : 'This code has no issues, so the comments were not needed.';
-  return `${result.found} of ${exercise.findings.length} issues identified.`;
+  return `${exercise.findings.filter(f => findingFound(f, comments)).length} of ${exercise.findings.length} issues identified.`;
 }

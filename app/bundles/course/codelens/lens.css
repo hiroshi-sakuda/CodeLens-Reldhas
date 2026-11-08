@@ -83,3 +83,16 @@
 .lr-terminal .console-heading h3{display:none}
 .lr-terminal .console-heading{justify-content:flex-end}
 .lr-sel .lr-line.pickable:hover{background:transparent}
+
+/* Live AI: waiting screen and next steps */
+.lr-evaluating h2{margin:0}
+.lr-evaluating .tile{animation:cl-evaluate 1.1s ease-in-out infinite alternate}
+@keyframes cl-evaluate{from{transform:scale(.94);opacity:.7}to{transform:scale(1.04);opacity:1}}
+@media (prefers-reduced-motion: reduce){.lr-evaluating .tile{animation:none}}
+.ai-steps ol{margin:6px 0 0;padding-left:20px}.ai-steps li{margin:4px 0}
+
+/* The situation and requirements sit on one neutral panel so they read before the code. */
+.lr-brief{padding:16px 18px;border-radius:var(--r-card);background:var(--ground)}
+.lr-brief h3{font-size:14.5px;color:var(--ink)}
+.lr-brief p{color:var(--ink)}
+.lr-brief ul{font-size:14.5px}

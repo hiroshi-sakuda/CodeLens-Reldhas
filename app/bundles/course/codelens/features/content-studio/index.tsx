@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FileText, Search, Trash2, Upload } from 'lucide-react';
 import type { Feature } from '../../features';
-import { functionNames, label, practiceFunctions, readCourse, topicName, topics, writeCourse } from '../../course.js';
+import { functionNames, practiceFunctions, readCourse, topicName, topics, writeCourse } from '../../course.js';
 import { SparkIcon, StudioIcon } from '../../icons';
 import { exercises } from '../../model.js';
 import { CodeCard } from '../../ui';

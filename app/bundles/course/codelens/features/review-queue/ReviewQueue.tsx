@@ -67,7 +67,7 @@ export function TaReview({ params, go }: ScreenProps) {
   if (!item) return <section className="sheet center-sheet"><p>This submission is no longer in the queue.</p><button className="btn btn-outline" onClick={() => go('review-queue')}>Back to Review Queue</button></section>;
   const { submission: s, exercise } = item;
   const comments = s.comments.map(normalizeComment);
-  const original = aiSummary(exercise, s.result, s.noIssues);
+  const original = aiSummary(exercise, s.comments, s.noIssues);
   const waiting = queue.filter(i => i.status === 'waiting');
   const position = waiting.findIndex(i => i.submission.id === s.id);
   const nextWaiting = waiting.find(i => i.submission.id !== s.id);
@@ -109,8 +109,9 @@ export function TaReview({ params, go }: ScreenProps) {
       <aside className="sheet work-side" aria-label="Your review">
         <div className="work-side-body">
           <section aria-labelledby="ai-title" className="feedback-block">
-            <div className="score-head"><div><div className="ai-title"><SparkIcon/><h2 id="ai-title" className="panel-title">AI feedback draft</h2></div><span className="muted-text">Based on the answer key and the rubric</span></div><div className="big-score"><strong>{+s.result.total.toFixed(1)}</strong><span>/ 10</span></div></div>
+            <div className="score-head"><div><div className="ai-title"><SparkIcon/><h2 id="ai-title" className="panel-title">AI feedback draft</h2></div><span className="muted-text">{s.result.source === 'ai' ? 'Written by live AI and shown to the student' : 'Based on the answer key and the rubric'}</span></div><div className="big-score"><strong>{+s.result.total.toFixed(1)}</strong><span>/ 10</span></div></div>
             <p>{original}</p>
+            {s.result.source === 'ai' && <><p>{s.result.summary}</p>{s.result.improvements?.length > 0 && <div className="ai-steps"><h3 className="small-title">To strengthen the review</h3><ol>{s.result.improvements.map((text: string, i: number) => <li key={i}>{text}</li>)}</ol></div>}</>}
             <span className={'chip ' + (confidenceOf(exercise, s.comments) === 'low' ? 'warn' : '')}>AI confidence: {confidenceOf(exercise, s.comments)}</span>
           </section>
           <section aria-labelledby="key-title" className="feedback-block">

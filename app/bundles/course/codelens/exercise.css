@@ -1,7 +1,9 @@
 /* Exercise screens: a slim bar over two sheets. Submit sits at the bottom of the work panel. */
 .app-frame.exercise{gap:8px}
+/* Near-equal columns with a maximum width, so the code and the answer panel stay close together. */
+.app-frame.exercise>:not(.modal-backdrop){width:100%;max-width:1320px;margin-inline:auto;box-sizing:border-box}
 .work-area{flex:1;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
-.work-main{flex:999 1 540px;min-width:0;box-sizing:border-box;padding:22px;display:flex;flex-direction:column;gap:18px}
+.work-main{flex:1 1 540px;min-width:0;box-sizing:border-box;padding:22px;display:flex;flex-direction:column;gap:18px}
 .work-side{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;overflow:hidden}
 .work-side-body{flex:1;box-sizing:border-box;padding:22px;display:flex;flex-direction:column;gap:20px}
 .work-prompt{margin:0;font-family:var(--font-title);font-size:22px;letter-spacing:-.3px;font-weight:500}
@@ -90,7 +92,7 @@
 .big-score{display:flex;align-items:baseline;gap:6px}
 .big-score strong{font-family:var(--font-title);font-size:40px;line-height:1;font-weight:600;font-variant-numeric:tabular-nums}
 .big-score span{font-size:16px;color:var(--ink-soft)}
-.score-sub{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13px;color:var(--ink-soft)}
+.score-sub{flex:1 1 200px;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13px;color:var(--ink-soft);text-align:right}
 .score-sub strong{color:var(--ink);font-weight:600;font-size:14.5px}
 .feedback-block{display:flex;flex-direction:column;gap:10px}
 .feedback-block p{margin:0}
@@ -142,3 +144,11 @@
 .score-pair{display:flex;align-items:flex-end;gap:22px}
 .big-score small{align-self:flex-end;margin-left:4px;font-size:12.5px;font-weight:600;color:var(--ink-faint)}
 .big-score.ta{padding-left:22px;border-left:1px solid var(--line)}
+
+/* Random sits apart from the lens cards: it ticks them all rather than being another lens. */
+.random-check{display:flex;align-items:center;gap:10px;margin-top:6px;padding:4px 2px;font-size:14px;color:var(--ink-soft);cursor:pointer}
+.random-check strong{font-weight:600;color:var(--ink)}
+.random-check input{width:18px;height:18px;margin:0;flex-shrink:0;accent-color:var(--ink)}
+.random-check svg{flex-shrink:0}
+:root[data-theme="dark"] .random-check input{accent-color:var(--action)}
+.option-card:has(input:disabled)>.vf-c{opacity:0}

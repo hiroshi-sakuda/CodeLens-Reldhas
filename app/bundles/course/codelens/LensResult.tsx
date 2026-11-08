@@ -28,29 +28,32 @@ export function TaNote({ comments, highlight = false }: { comments: string[]; hi
   </section>;
 }
 
-export default function LensResult({ exercise, comments, result, noIssues, justification, focus, ta, taScore, rating }: {
+export default function LensResult({ exercise, comments, result, noIssues, justification, focus, ta, taScore, rating, note }: {
   exercise: any; comments: any[]; result: any; noIssues?: boolean; justification?: string; focus: string[];
-  ta?: ReactNode; taScore?: number | null; rating?: ReactNode;
+  ta?: ReactNode; taScore?: number | null; rating?: ReactNode; note?: string;
 }) {
+  const live = result.source === 'ai';
+  // Found and missed always come from the answer key, also when the score comes from live AI.
   const found = exercise.findings.filter((f: any) => findingFound(f, comments)).length;
-  const extra = comments.map(c => commentFeedback(exercise, c)).filter(f => f.result !== 'found');
+  const extra = live ? [] : comments.map(c => commentFeedback(exercise, c)).filter(f => f.result !== 'found');
   const clean = !exercise.findings.length;
-  const summary = clean
+  const summary = live ? result.summary : note || (clean
     ? (noIssues ? 'Correct conclusion: this code meets the requirements.' : 'This code has no issues, so the annotations were not needed.')
-    : found === exercise.findings.length ? 'You found every planted issue.' : found ? `You found ${found} of ${exercise.findings.length} issues. Check the one you missed below.` : 'You missed the planted issues. Each one is explained below.';
+    : found === exercise.findings.length ? 'You found every planted issue.' : found ? `You found ${found} of ${exercise.findings.length} issues. Check the one you missed below.` : 'You missed the planted issues. Each one is explained below.');
   return <>
     <div className="score-head">
       <div className="score-pair">
         <div className="big-score"><strong>{+result.total.toFixed(1)}</strong><span>/ 10</span>{taScore != null && <small>AI</small>}</div>
         {taScore != null && <div className="big-score ta"><strong>{+taScore.toFixed(1)}</strong><span>/ 10</span><small>Your TA</small></div>}
       </div>
-      <div className="score-sub"><strong>{clean ? (noIssues ? 'Right conclusion' : 'No issues to find') : `Found ${found} of ${exercise.findings.length} ${exercise.findings.length === 1 ? 'issue' : 'issues'}`}</strong><span>Lens tested: {focus.join(', ')}</span></div>
+      <div className="score-sub"><strong>{clean ? (noIssues ? 'Right conclusion' : 'No issues to find') : `Found ${found} of ${exercise.findings.length} ${exercise.findings.length === 1 ? 'issue' : 'issues'}`}</strong><span>Lenses practised: {focus.join(', ')}</span><span>Topic: {exercise.topic}</span></div>
     </div>
     {ta}
     <section aria-labelledby="ai-title" className="feedback-block">
-      <div className="ai-title"><SparkIcon/><h2 id="ai-title" className="panel-title">AI feedback</h2><span className="chip">{ta ? 'Checked by your TA' : 'Simulated'}</span></div>
+      <div className="ai-title"><SparkIcon/><h2 id="ai-title" className="panel-title">AI feedback</h2><span className="chip">{live ? 'Live AI' : ta ? 'Checked by your TA' : 'Simulated'}</span></div>
       <p>{summary}</p>
       {noIssues && <article className={'note-box ' + (clean ? 'good' : 'warn')}><div className="note-head"><span className={'chip ' + (clean ? 'good' : 'warn')}>{clean ? <CheckIcon/> : <X size={14} strokeWidth={2.6}/>}No issues found</span></div><p>{justification}</p></article>}
+      {live && result.improvements.length > 0 && <div className="ai-steps"><h3 className="small-title">To strengthen your review</h3><ol>{result.improvements.map((s: string, i: number) => <li key={i}>{s}</li>)}</ol></div>}
       {exercise.findings.map((f: any, i: number) => {
         const hit = findingFound(f, comments);
         return <article key={i} className={'note-box ' + (hit ? 'good' : 'warn')}>
@@ -60,13 +63,14 @@ export default function LensResult({ exercise, comments, result, noIssues, justi
         </article>;
       })}
       {extra.map(f => <article key={f.id} className="note-box plain">
-        <div className="note-head"><span className="chip">{({ 'wrong-lens': 'Other lens', unclear: 'Issue not named', 'not-an-issue': 'Not an issue' } as Record<string, string>)[f.result]}</span><span className="lines">{f.label}</span></div>
+        <div className="note-head"><span className="chip">{({ 'wrong-lens': 'Wrong lens', unclear: 'Issue not named', 'not-an-issue': 'Not an issue' } as Record<string, string>)[f.result]}</span><span className="lines">{f.label}</span></div>
         {f.points.map(p => <p key={p}>{p}</p>)}
       </article>)}
     </section>
-    {Object.keys(result.rubric).length > 0 && <details className="more-details"><summary>How this was scored (simulated)</summary>
+    {!ta && <section className="note-box plain" aria-label="TA review"><div className="note-head"><strong>TA review</strong><span className="chip">Not available yet</span></div><p>A teaching assistant will check this review and add feedback here.</p></section>}
+    {Object.keys(result.rubric).length > 0 && <details className="more-details"><summary>How this was scored{live ? '' : ' (simulated)'}</summary>
       {Object.entries(result.rubric).map(([key, value]: [string, any]) => <p key={key} className="row-between"><span style={{ textTransform: 'capitalize' }}>{key}</span><strong>{value.toFixed(1)} / 2.5</strong></p>)}
-      <p className="muted-text">Demo scoring uses keywords and line ranges, not live AI.</p>
+      <p className="muted-text">{live ? 'The score comes from live AI, which can be imperfect. Found and missed come from the answer key.' : 'Demo scoring uses keywords and line ranges, not live AI.'}</p>
     </details>}
     {rating}
   </>;

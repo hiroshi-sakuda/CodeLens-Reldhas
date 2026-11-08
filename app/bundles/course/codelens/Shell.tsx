@@ -75,7 +75,7 @@ function Frame({ route, role, go, onRole }: { route: Route; role: Role; go: Go; 
     <TopBar role={role} routeId={route.id} go={go} onRole={onRole}/>
     <main className="sheet page"><div className="page-inner">
       {feature ? <feature.Screen key={route.id + JSON.stringify(route.params)} {...screenProps}/> : <StudentHome {...screenProps}/>}
-      {feature?.role !== 'ta' && <p className="cl-demo-note">Demo with sample exercises and simulated grading. Progress is saved in this browser.</p>}
+      {feature?.role !== 'ta' && <p className="cl-demo-note">Demo with sample exercises. Progress is saved in this browser.</p>}
     </div></main>
   </div>;
 }
@@ -85,6 +85,6 @@ export default function Shell() {
   const [role, setRole] = useState<Role>('student');
   useTheme();
   const go: Go = (id, params = {}) => { setRoute({ id, params }); window.scrollTo({ top: 0 }); };
-  if (route.id === 'lens-review') return <div className="app-frame exercise"><App onHome={() => go('home')} params={route.params}/></div>;
+  if (route.id === 'lens-review') return <div className="app-frame exercise"><App onHome={() => go('home')} onHistoryBack={() => go('skill-map')} params={route.params}/></div>;
   return <Frame route={route} role={role} go={go} onRole={next => { setRole(next); go(next === 'ta' ? taHome() : 'home'); }}/>;
 }

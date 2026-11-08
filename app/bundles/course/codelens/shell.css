@@ -67,3 +67,5 @@
 .skill-value.low{color:var(--amber-strong)}
 .btn-xs{min-height:36px;padding:0 14px;font-size:13.5px}
 .skill-row{display:flex;flex-direction:column;gap:6px}
+
+.cl-back{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}

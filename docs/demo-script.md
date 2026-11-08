@@ -37,12 +37,12 @@ judgement."
 
 ## 4. Lens Review: judge it without hints (1 min)
 
-1. Start Lens Review with Random criteria.
+1. Start Lens Review and tick **Random**.
 2. **Fill a good answer** and **Submit review**. If this exercise has no issues,
-   the good answer ticks *No issues found*; use **Next exercise** to get one with
+   the good answer ticks *I found no issues*; use **Next Lens Review** to get one with
    issues, which shows more.
-3. Point at the AI feedback box under each comment: claim, lines, reasoning and
-   fix.
+3. Point at *You found this* and *You missed this* under the AI feedback, and the
+   matching marks on the code.
 
 ## 5. Skill Map (30 s)
 

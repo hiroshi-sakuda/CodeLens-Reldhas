@@ -3,7 +3,7 @@ import { help, Brief } from '../../App';
 import { SlimBar } from '../../bars';
 import type { Feature, Note, ScreenProps } from '../../features';
 import LensResult, { ResultCode, scoreText, TaNote } from '../../LensResult';
-import { exercises } from '../../model.js';
+import { dimensions, exercises } from '../../model.js';
 import { nextPractice } from '../../review-flow.js';
 import { readTa, writeTa } from '../../practice-log.js';
 import { PanelFooter, ResultChip, WorkArea } from '../../ui';
@@ -37,7 +37,7 @@ function ReviewResult({ params, go }: ScreenProps) {
   if (!submission) return <><SlimBar title="Lens Review" onExit={() => go('home')} leave={null}/><section className="sheet center-sheet"><p>This review is no longer available.</p><button className="btn btn-outline" onClick={() => go('home')}>Back to Practice</button></section></>;
   const exercise = exercises.find(e => e.id === submission.exercise)!;
   const draft = Object.values(readDrafts()).find((d: any) => d.attemptId === submission.id) as any;
-  const focus = draft?.focus || [...new Set(exercise.findings.map((f: any) => f.dimension))];
+  const focus = draft?.randomFocus ? dimensions : draft?.focus || [...new Set(exercise.findings.map((f: any) => f.dimension))];
   const shown = feedback.adjustedScore ?? submission.result.total;
   const next = () => { try { go('lens-review', { start: nextPractice(exercise.id, focus, draft ? !!draft.randomFocus : true) }); } catch { go('lens-review', { setup: true }); } };
   return <>

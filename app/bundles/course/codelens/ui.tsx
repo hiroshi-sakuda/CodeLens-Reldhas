@@ -5,6 +5,7 @@ import './exercise.css';
 // Small building blocks shared by the redesigned screens.
 
 export const pct = (value: number | null | undefined) => value == null ? '—' : Math.round(value * 100) + '%';
+export const scorePoints = (s: { points: number; items: number }) => `${+s.points.toFixed(1)} / ${s.items}`;
 export const shortDate = (iso: string) => new Date(iso).toLocaleDateString([], { day: 'numeric', month: 'short' });
 
 /* Result pill: green when right, amber when it needs work, red for a zero. */

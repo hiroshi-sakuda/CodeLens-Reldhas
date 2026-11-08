@@ -106,3 +106,17 @@ test('a submission takes the student vote from its own attempt',()=>{
     assert.deepEqual(real.map(s=>[s.id,s.studentVote]),[['one','up'],['two','down']]);
   } finally { delete globalThis.localStorage; }
 });
+
+test('the TA summary counts found issues from the answer key, not the live AI number',async()=>{
+  const { aiSummary } = await import('../app/bundles/course/codelens/features/review-queue/queue.js');
+  const exercise={findings:[{dimension:'Correctness',start:1,end:1,keywords:['boundary'],fixes:[]}]};
+  assert.equal(aiSummary(exercise,[{start:1,end:1,lenses:['Correctness'],text:'A boundary bug.',fix:'x'}],false),'1 of 1 issues identified.');
+  assert.equal(aiSummary(exercise,[{start:1,end:1,lenses:['Correctness'],text:'Worded differently.',fix:'x'}],false),'0 of 1 issues identified.');
+});
+test('a Practise topic with nothing available falls back to the other published topics',async()=>{
+  const { eligibleForTopic } = await import('../app/bundles/course/codelens/course.js');
+  const items=[{id:'a',difficulty:'easy',topicId:'loops'},{id:'b',difficulty:'easy',topicId:'lists-strings'}];
+  assert.deepEqual(eligibleForTopic(items,'easy',['loops','lists-strings'],'loops').map(i=>i.id),['a']);
+  assert.deepEqual(eligibleForTopic(items,'easy',['lists-strings'],'loops').map(i=>i.id),['b']);
+  assert.equal(eligibleForTopic(items,'easy',['loops','lists-strings']).length,2);
+});

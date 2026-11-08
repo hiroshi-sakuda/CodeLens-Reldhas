@@ -14,7 +14,7 @@ export type Feature = {
   Screen: ComponentType<ScreenProps>;
   HomePanel?: ComponentType<ScreenProps>;
   scoreFor?: (fn: string) => string | null;
-  card?: { icon: ComponentType<any>; lens: string; skill: string; score: () => string | null };
+  card?: { icon: ComponentType<any>; lens: string; skill: string; score: () => string | null; items?: any[] }; // items: the question bank, for the level and topic choices
   help?: { title: string; steps: string[] };
   navIcon?: ComponentType<{ size?: number }>;
   badge?: () => number;

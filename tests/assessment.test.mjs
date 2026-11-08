@@ -103,3 +103,22 @@ test('next random exercise keeps random mode',()=>{
   assert.equal(next.randomFocus,true);
   assert.ok(next.focus.length>0);
 });
+
+test('a realistic review of each Appropriateness and Maintainability exercise earns full marks',()=>{
+  const reviews={
+    'seats-appropriateness-bisect':['Sorting the list and using binary search is more machinery than this question needs here.','Use a set and not in.'],
+    'seats-appropriateness-exceptions':['The code catches a KeyError to detect a free seat, which is a normal outcome here.','Check not in a set.'],
+    'seats-maintainability-flag':['The as_text flag makes this one function do two things and return different types.','Split formatting into its own function.'],
+    'seats-maintainability-comments':['The comments are misleading because they say booked seats are returned, sorted by row.','Rewrite them to be accurate.'],
+    'discount-appropriateness-classes':['A class hierarchy is far too much structure when there is only a single pricing rule.','Use a plain function.'],
+    'discount-appropriateness-dict':['A dictionary keyed on True and False is the wrong tool for a choice between two prices.','Use a conditional.'],
+    'discount-maintainability-nesting':['The nested branches make the reader keep the outer condition in mind to reach the error.','Use a guard clause.'],
+    'discount-maintainability-boolean':['Multiplying by a comparison is a clever trick that makes the discount rule slow to understand.','Write an explicit branch.'],
+  };
+  for(const [id,[text,fix]] of Object.entries(reviews)) {
+    const e=exercises.find(x=>x.id===id);
+    assert.equal(e.findings.length,1,id);
+    const f=e.findings[0];
+    assert.equal(assess(e,[{start:f.start,end:f.end,lenses:[f.dimension],text,fix}]).total,10,id);
+  }
+});
